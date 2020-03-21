@@ -1,0 +1,159 @@
+
+if (outcome != success) of /system-property=pg-xa.host:read-resource
+    /system-property=pg-xa.host:add(value="${psql.host}")
+end-if
+
+if (outcome != success) of /system-property=pg-xa.port:read-resource
+	/system-property=pg-xa.port:add(value="${psql.port}")
+end-if
+
+if (outcome != success) of /system-property=pg-xa.db:read-resource
+	/system-property=pg-xa.db:add(value="${psql.db}")
+end-if
+
+if (outcome != success) of /system-property=pg-xa.user:read-resource
+	/system-property=pg-xa.user:add(value="${psql.user}")
+end-if
+
+if (outcome != success) of /system-property=pg-xa.password:read-resource
+	/system-property=pg-xa.password:add(value="${psql.password}")
+end-if
+
+if (outcome != success) of /system-property=pg.user:read-resource
+	/system-property=pg.user:add(value="${psql.user}")
+end-if
+
+if (outcome != success) of /system-property=pg.password:read-resource
+	/system-property=pg.password:add(value="${psql.password}")
+end-if
+
+if (outcome != success) of /system-property=pg.url:read-resource
+	/system-property=pg.url:add(value="${psql.url}")
+end-if
+
+if (outcome != success) of /system-property=pg-xa.log.level:read-resource
+	/system-property=pg-xa.log.level:add(value="${psql.log.level}")
+end-if
+
+if (outcome != success) of /system-property=tibco.host:read-resource  
+	/system-property=tibco.host:add(value=${external.jms.host})
+end-if
+
+if (outcome != success) of /system-property=tibco.port:read-resource 
+	/system-property=tibco.port:add(value=${external.jms.port})
+end-if
+
+if (outcome != success) of /system-property=tibco.user:read-resource 
+	/system-property=tibco.user:add(value=${external.jms.username})
+end-if
+
+if (outcome != success) of /system-property=tibco.password:read-resource 
+	/system-property=tibco.password:add(value=${external.jms.password})
+end-if
+if (outcome != success) of /system-property=tx.node.id:read-resource 
+	/system-property=tx.node.id:add(value=${arjuna.node.id})
+end-if
+
+/subsystem=ee:write-attribute(name=annotation-property-replacement,value=true)
+
+/subsystem=ee:write-attribute(name=jboss-descriptor-property-replacement,value=true)
+
+/subsystem=ee:write-attribute(name=spec-descriptor-property-replacement,value=true)
+
+/subsystem=transactions:write-attribute(name=statistics-enabled,value=true)
+
+if ( result == undefined) of /subsystem=ee:read-attribute(name=global-modules)
+	echo ' *** Doing global-modules'
+	/subsystem=ee:write-attribute(name=global-modules,value=[{name=org.jboss.genericjms.provider,slot=main}])
+else
+    echo ' *** global module already added'
+end-if
+
+reload
+
+
+if (outcome != success) of /subsystem="datasources"/jdbc-driver="postgresql":read-resource()
+
+	/subsystem="datasources"/jdbc-driver="postgresql":add(driver-module-name="org.postgresql.jdbc",driver-name="postgresql",driver-xa-datasource-class-name="org.postgresql.xa.PGXADataSource")	
+	
+end-if
+
+if (outcome != success) of /subsystem="datasources"/data-source=PostgresDS:read-resource
+	data-source add --name=PostgresDS --jndi-name=java:jboss/PostgresDS --driver-name=postgresql --connection-url=jdbc:postgresql://${pg.url} --user-name=${pg.user} --password=${pg.password} --validate-on-match=true --background-validation=false --valid-connection-checker-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker --exception-sorter-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter
+end-if
+
+echo " *** Adding Postgres XA DS"
+
+if (outcome != success) of /subsystem="datasources"/xa-data-source=PostgresXADS:read-resource
+
+	/subsystem="datasources"/xa-data-source="PostgresXADS":add(background-validation="false",driver-name="postgresql",exception-sorter-class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter",jndi-name="java:jboss/datasources/xa/PostgresXADS",password="${pg-xa.password}",user-name="${pg-xa.user}",valid-connection-checker-class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker",validate-on-match="true",enabled=false)	
+	
+	/subsystem="datasources"/xa-data-source="PostgresXADS"/xa-datasource-properties="ServerName":add(value="${pg-xa.host}")
+	/subsystem="datasources"/xa-data-source="PostgresXADS"/xa-datasource-properties="PortNumber":add(value="${pg-xa.port}")
+	/subsystem="datasources"/xa-data-source="PostgresXADS"/xa-datasource-properties="DatabaseName":add(value="${pg-xa.db}")
+	/subsystem="datasources"/xa-data-source="PostgresXADS"/xa-datasource-properties="LogLevel":add(value="${pg-xa.log.level}")
+	
+	/subsystem=datasources/xa-data-source=PostgresXADS:write-attribute(name=no-recovery,value=false)
+	/subsystem=datasources/xa-data-source=PostgresXADS:write-attribute(name=recovery-username,value="${pg-xa.user}")
+	/subsystem=datasources/xa-data-source=PostgresXADS:write-attribute(name=recovery-password,value="${pg-xa.password}")
+
+end-if
+
+if (result==false) of /subsystem=datasources/xa-data-source=PostgresXADS:read-attribute(name=enabled)
+	/subsystem=datasources/xa-data-source=PostgresXADS:write-attribute(name=enabled,value=true)
+else 
+	echo ' *** Postgres DS Statistics already enabled'
+end-if
+
+reload
+
+
+if (outcome != success) of /subsystem=naming/binding="java:global/tibco":read-resource
+
+batch
+/subsystem="naming"/binding="java:global/tibco":add(binding-type="external-context",class="javax.naming.InitialContext",environment={"java.naming.factory.initial" => "com.tibco.tibjms.naming.TibjmsInitialContextFactory","java.naming.factory.url.pkgs" => "com.tibco.tibjms.naming","java.naming.provider.url" => "tcp://${tibco.host}:${tibco.port}","java.naming.security.principal" => "${tibco.user}","java.naming.security.credentials" => "${tibco.password}","org.jboss.as.naming.lookup.by.string" => "true"},module="org.jboss.genericjms.provider")
+/subsystem="naming"/binding="java:/jms/tibco/queue/sourceQueue":add(binding-type="lookup",lookup="java:global/tibco/jms/queue/sourceQueue")
+/subsystem="naming"/binding="java:/jms/tibco/queue/targetQueue":add(binding-type="lookup",lookup="java:global/tibco/jms/queue/targetQueue")
+/subsystem="naming"/binding="java:/jms/tibco/queue/inQueue":add(binding-type="lookup",lookup="java:global/tibco/jms/queue/inQueue")
+/subsystem="naming"/binding="java:/jms/tibco/queue/outQueue":add(binding-type="lookup",lookup="java:global/tibco/jms/queue/outQueue")
+/subsystem="naming"/binding="java:/jms/tibco/topic/inTopic":add(binding-type="lookup",lookup="java:global/tibco/jms/topic/inTopic")
+/subsystem="naming"/binding="java:/jms/tibco/topic/outTopic":add(binding-type="lookup",lookup="java:global/tibco/jms/topic/outTopic")
+
+run-batch
+
+end-if
+
+if (outcome != success) of /subsystem="resource-adapters"/resource-adapter="genericjms-xa":read-resource
+
+batch
+
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa":add(module="org.jboss.genericjms:main",transaction-support="XATransaction")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="inQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/tibco/jms/queue/inQueue")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="sourceTopic":add(class-name="java.jms.Topic",enabled="true",jndi-name="java:/tibco/jms/topic/sourceTopic")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="testTopic":add(class-name="java.jms.Topic",enabled="true",jndi-name="java:/tibco/jms/topic/testTopic")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="sourceQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/tibco/jms/queue/sourceQueue")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="outQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/tibco/jms/queue/outQueue")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="targetQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/tibco/jms/queue/targetQueue")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="testQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/tibco/jms/queue/testQueue")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="targetTopic":add(class-name="java.jms.Topic",enabled="true",jndi-name="java:/tibco/jms/topic/targettopic")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="inTopic":add(class-name="java.jms.Topic",enabled="true",jndi-name="java:/tibco/jms/topic/outTopic")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF":add(class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory",jndi-name="java:/jms/tibco/cf/XATopicConnectionFactory",max-pool-size="15",min-pool-size="5",no-recovery="false",recovery-password="${tibco.password}",recovery-username="${tibco.user}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="ConnectionFactory":add(value="jms/cf/XATopicConnectionFactory")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="UserName":add(value="${tibco.user}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="SessionDefaultType":add(value="javax.jms.Topic")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="Password":add(value="${tibco.password}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="JndiParameters":add(value="java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://${tibco.host}:${tibco.port}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF":add(class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory",jndi-name="java:/jms/tibco/cf/XAQueueConnectionFactory",max-pool-size="15",min-pool-size="5",no-recovery="false",recovery-password="${tibco.password}",recovery-username="${tibco.user}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="ConnectionFactory":add(value="jms/cf/XAQueueConnectionFactory")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="UserName":add(value="${tibco.user}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="SessionDefaultType":add(value="javax.jms.Queue")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="Password":add(value="${tibco.password}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="JndiParameters":add(value="java.naming.security.principal=${tibco.user};java.naming.security.credentials\=${tibco.password};java.naming.factory.initial\=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://${tibco.host}:${tibco.port}")
+
+/subsystem=resource-adapters/resource-adapter=genericjms-xa:write-attribute(name=statistics-enabled,value=true)
+
+run-batch
+
+end-if
+
+reload
