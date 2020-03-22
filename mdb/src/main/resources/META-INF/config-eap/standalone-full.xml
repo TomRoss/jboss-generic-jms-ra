@@ -172,57 +172,9 @@
                         <password>sa</password>
                     </security>
                 </datasource>
-                <datasource jndi-name="java:jboss/PostgresDS" pool-name="PostgresDS">
-                    <connection-url>jdbc:postgresql://${pg.url}</connection-url>
-                    <driver>postgresql</driver>
-                    <security>
-                        <user-name>${pg.user}</user-name>
-                        <password>${pg.password}</password>
-                    </security>
-                    <validation>
-                        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
-                        <validate-on-match>true</validate-on-match>
-                        <background-validation>false</background-validation>
-                        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
-                    </validation>
-                </datasource>
-                <xa-datasource jndi-name="java:jboss/datasources/xa/PostgresXADS" pool-name="PostgresXADS" enabled="true">
-                    <xa-datasource-property name="ServerName">
-                        ${pg-xa.host}
-                    </xa-datasource-property>
-                    <xa-datasource-property name="PortNumber">
-                        ${pg-xa.port}
-                    </xa-datasource-property>
-                    <xa-datasource-property name="DatabaseName">
-                        ${pg-xa.db}
-                    </xa-datasource-property>
-                    <xa-datasource-property name="LogLevel">
-                        ${pg-xa.log.level}
-                    </xa-datasource-property>
-                    <driver>postgresql</driver>
-                    <security>
-                        <user-name>${pg-xa.user}</user-name>
-                        <password>${pg-xa.password}</password>
-                    </security>
-                    <recovery no-recovery="false">
-                        <recover-credential>
-                            <user-name>${pg-xa.user}</user-name>
-                            <password>${pg-xa.password}</password>
-                        </recover-credential>
-                    </recovery>
-                    <validation>
-                        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
-                        <validate-on-match>true</validate-on-match>
-                        <background-validation>false</background-validation>
-                        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
-                    </validation>
-                </xa-datasource>
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
-                    </driver>
-                    <driver name="postgresql" module="org.postgresql.jdbc">
-                        <xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
                     </driver>
                 </drivers>
             </datasources>
