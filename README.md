@@ -3,7 +3,7 @@ JBoss (EAP 7) Generic JMS RA TIBCO EMS integration example
 
 This example assumes that you have a TIBCO EMS broker running and provider module has been added to the JBoss EAP instance.
 The example uses `tibco.properties` (file below) to point a external TIBCO broker
- 
+ ~~~
 # tibco.properties
 external.jms.host=localhost
 external.jms.port=7222
@@ -31,21 +31,22 @@ jboss.as.log.level=INFO
 
 artemis.ra.client.global.thread.pool.max.size=250
 artemis.ra.client.global.scheduled.thread.pool.core.size=250
-
-To deploy this example in JBoss EAP 7
-
-Follow the steps
+~~~
+To deploy this example in JBoss EAP 7 follow the steps
 - create quickuser
+~~~
   cd $JBOSS_HOME/bin
   ./add-user.sh -a -u quickuser -p quick123+ -g guest
-  
+~~~  
 - create standalone-tibco instance
+~~~
   cd $JBOSS_HOME 
   cp -rp standalone standalone-tibco
-  
+~~~  
 - add provider module to the generic JMS RA
   locate `genericjms` used by the JBoss instance
   for examlpe
+~~~
   cd $JBOSS_HOME
   find . -name 'generic*'
   ./modules/system/layers/base/org/jboss/genericjms
@@ -55,7 +56,9 @@ Follow the steps
   cd ./modules/system/layers/base/.overlays/layer-base-jboss-eap-7.2.7.CP/org/jboss/genericjms
   mkdir -p provider/main
   cd provider/main
-  create `module.xml` file 
+~~~
+   - create `module.xml` file 
+~~~
   <?xml version='1.0' encoding='UTF-8'?>
   <module xmlns="urn:jboss:module:1.5" name="org.jboss.genericjms.provider">
       <resources>
@@ -72,15 +75,20 @@ Follow the steps
            <module name="org.jboss.jts" />
       </dependencies>
   </module>
-  add TIBCO runtime jars to the provider module. Those are provided by TIBCO and do not come with JBoss EAP.
+~~~
+ - add TIBCO runtime jars to the provider module. Those are provided by TIBCO and do not come with JBoss EAP.
   
 - start JBoss instance with command 
+~~~
   ./standalone.sh -Djboss.server.base.dir=$JBOSS_HOME/standalone-tibco --server-config=standalone-full.xml --properties=tibco.properties
- 
-- add TIBCO configuration to EAP
+~~~ 
+- add TIBCO configuration to EAP (tibco.cli file is located in hte project's resource directory)
+~~~
   jboss-cli.sh --connect --file=tibco.cli
-  
+~~~  
 - deploy ear file
+~~~
   mvn clean package wildfly:deploy  
+~~~
 
 
