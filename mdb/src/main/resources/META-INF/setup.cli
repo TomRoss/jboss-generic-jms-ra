@@ -1,0 +1,54 @@
+batch
+/system-property=tibco.host:add(value=ragga)
+/system-property=tibco.port:add(value=7222)
+/system-property=tibco.user:add(value=admin)
+/system-property=tibco.password:add(value=admin)
+run-batch
+
+batch
+#/subsystem="naming":add()
+/subsystem="naming"/binding="java:/Q1":add(binding-type="object-factory",class="org.jboss.genericjms.provider.RemoteJMSObjectFactory",environment={"java.naming.factory.initial" => "com.tibco.tibjms.naming.TibjmsInitialContextFactory","java.naming.provider.url" => "tcp://${tibco.host}:${tibco.port}","java.naming.security.principal" => "${tibco.user}","java.naming.security.credentials" => "${tibco.password}","java.naming.factory.url.pkgs" => "com.tibco.tibjms.naming"},module="org.jboss.genericjms.provider")
+/subsystem="naming"/binding="java:/testQueue":add(binding-type="object-factory",class="org.jboss.genericjms.provider.RemoteJMSObjectFactory",environment={"java.naming.factory.initial" => "com.tibco.tibjms.naming.TibjmsInitialContextFactory","java.naming.provider.url" => "tcp://${tibco.host}:${tibco.port}","java.naming.security.principal" => "${tibco.user}","java.naming.security.credentials" => "${tibco.password}","java.naming.factory.url.pkgs" => "com.tibco.tibjms.naming"},module="org.jboss.genericjms.provider")
+/subsystem="naming"/binding="java:/jms/tibco/queue/sourceQueue":add(binding-type="object-factory",class="org.jboss.genericjms.provider.RemoteJMSObjectFactory",environment={"java.naming.factory.initial" => "com.tibco.tibjms.naming.TibjmsInitialContextFactory","java.naming.provider.url" => "tcp://${tibco.host}:${tibco.port}","java.naming.security.principal" => "${tibco.user}","java.naming.security.credentials" => "${tibco.password}","java.naming.factory.url.pkgs" => "com.tibco.tibjms.naming"},module="org.jboss.genericjms.provider")
+/subsystem="naming"/binding="java:/jms/tibco/queue/targetQueue":add(binding-type="object-factory",class="org.jboss.genericjms.provider.RemoteJMSObjectFactory",environment={"java.naming.factory.initial" => "com.tibco.tibjms.naming.TibjmsInitialContextFactory","java.naming.provider.url" => "tcp://${tibco.host}:${tibco.port}","java.naming.security.principal" => "${tibco.user}","java.naming.security.credentials" => "${tibco.password}","java.naming.factory.url.pkgs" => "com.tibco.tibjms.naming"},module="org.jboss.genericjms.provider")
+/subsystem="naming"/binding="java:/jms/tibco/queue/inQueue":add(binding-type="object-factory",class="org.jboss.genericjms.provider.RemoteJMSObjectFactory",environment={"java.naming.factory.initial" => "com.tibco.tibjms.naming.TibjmsInitialContextFactory","java.naming.provider.url" => "tcp://${tibco.host}:${tibco.port}","java.naming.security.principal" => "${tibco.user}","java.naming.security.credentials" => "${tibco.password}","java.naming.factory.url.pkgs" => "com.tibco.tibjms.naming"},module="org.jboss.genericjms.provider")
+/subsystem="naming"/binding="java:/jms/tibco/queue/outQueue":add(binding-type="object-factory",class="org.jboss.genericjms.provider.RemoteJMSObjectFactory",environment={"java.naming.factory.initial" => "com.tibco.tibjms.naming.TibjmsInitialContextFactory","java.naming.provider.url" => "tcp://${tibco.host}:${tibco.port}","java.naming.security.principal" => "${tibco.user}","java.naming.security.credentials" => "${tibco.password}","java.naming.factory.url.pkgs" => "com.tibco.tibjms.naming"},module="org.jboss.genericjms.provider")
+#/subsystem="naming"/service="remote-naming":add()
+run-batch
+
+batch
+
+/subsystem=ejb3:write-attribute(name=default-resource-adapter-name,value=genericjms)
+/subsystem=ejb3/strict-max-bean-instance-pool=mdb-strict-max-pool:write-attribute(name=max-pool-size,value=20)
+/subsystem=ejb3/strict-max-bean-instance-pool=mdb-strict-max-pool:write-attribute(name=timeout-unit,value=MINUTES)
+/subsystem=ejb3/strict-max-bean-instance-pool=mdb-strict-max-pool:write-attribute(name=timeout,value=5)
+
+run-batch
+
+batch
+/subsystem="resource-adapters"/resource-adapter="genericjms":add(module="org.jboss.genericjms:main",transaction-support="XATransaction")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/admin-objects="Q1":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/Q1")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/admin-objects="inQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/jms/tibco/queue/inQueue")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/admin-objects="sourceQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/jms/tibco/queue/sourceQueue")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/admin-objects="outQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/jms/tibco/queue/outQueue")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/admin-objects="targetQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/jms/tibco/queue/targetQueue")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/admin-objects="testQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/testQueue")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="XAQCF":add(class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory",enabled="true",jndi-name="java:/jms/tibco/cf/XAQCF",max-pool-size="10",min-pool-size="5",no-recovery="false",recovery-password="${tibco.password}",recovery-username="${tibco.user}")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="XAQCF"/config-properties="ConnectionFactory":add(value="java:/jms/tibco/cf/XAQCF")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="XAQCF"/config-properties="UserName":add(value="${tibco.user}")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="XAQCF"/config-properties="JndiParameters":add(value="java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://${tibco.host}:${tibco.port}")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="XAQCF"/config-properties="Password":add(value="${tibco.password}")
+run-batch
+
+batch
+#/subsystem="ee":add(annotation-property-replacement="true",global-modules=[{name="org.jboss.common-core",slot="main"},{name="org.jboss.genericjms.provider",slot="main"}],jboss-descriptor-property-replacement="true",spec-descriptor-property-replacement="true")
+/subsystem=ee:write-attribute(name=annotation-property-replacement,value=true)
+/subsystem=ee:write-attribute(name=spec-descriptor-property-replacement,value=true)
+/subsystem=ee:write-attribute(name=jboss-descriptor-property-replacement,value=true)
+/subsystem=ee:write-attribute(name=global-modules,value=[{name="org.jboss.common-corex",slot="main"},{name="org.jboss.genericjms.providerx",slot="main"}])
+run-batch
+
+reload
+
+
+
