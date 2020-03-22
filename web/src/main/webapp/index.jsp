@@ -13,18 +13,21 @@
     </head>
     <body>
         <h1 align="center">TIBCO JMS Web Client.</h1>
-        <form method="post" action="${pageContext.request.contextPath}/SimpleServlet">
+        <form method="post" action="${pageContext.request.contextPath}/WebClient">
             <fieldset>
                 <legend>Destination</legend>
-                <label>Destination Name:</label><input type="text" name="destination_name" value="/jms/qyeyetestQueue"/><br/>
-                <input type="radio" name="destination_type" value="on" checked="checked"/>Queue
-                <input type="radio" name="destination_type" value="on" />Topic
+                <label>Destination Name:</label><input type="text" name="destination_name" value="/jms/queue/testQueue"/><br/>
+                <input type="radio" name="destination_type" value="javax.jms.Queue" checked="checked"/>Queue
+                <input type="radio" name="destination_type" value="javax.jms.Topic" />Topic
             </fieldset>
             <fieldset>
                 <legend>Messages</legend>
                 <label>Message Number:</label>
-                <input type="text" name="message_number" value="A"/><br/>
-                <textarea name="message_text" rows="5" cols="20" tabindex="40" title="Message Text">This is test message</textarea>
+                <input type="text" name="message_number" value="1"/><br/>
+                <fieldset>
+                    <legend>Message Text</legend>
+                    <textarea name="message_text" rows="5" cols="20" title="Message Text">This is test message</textarea>
+                </fieldset>
             </fieldset>
             <br/>
             <input type="submit" value="Publish"/>

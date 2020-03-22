@@ -6,15 +6,15 @@
 
 
     <parent>
-        <groupId>org.acme.generic.jms.ra</groupId>
-        <artifactId>jboss-generic-jms-ra</artifactId>
+        <groupId>org.jboss.jms.tibco.int</groupId>
+        <artifactId>jboss-as-jms-tibco-int</artifactId>
         <version>1.0</version>
     </parent>
 
-    <groupId>org.acme.generic.jms.ra.ear</groupId>
-    <artifactId>jboss-generic-jmsra-ear</artifactId>
+    <groupId>org.jboss.jms.tibco.int.ear</groupId>
+    <artifactId>jboss-as-jms-tibco-int-ear</artifactId>
 
-    <name>jboss-generic-jmsra-ear</name>
+    <name>jboss-as-jms-tibco-int-ear</name>
 
     <packaging>ear</packaging>
 
@@ -25,16 +25,18 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.acme.generic.jms.ra.mdb</groupId>
-            <artifactId>jboss-generic-jms-ra-mdb</artifactId>
+            <groupId>org.jboss.jms.tibco.int.mdb</groupId>
+            <artifactId>jboss-as-jms-tibco-int-mdb</artifactId>
+            <scope>compile</scope>
             <type>ejb</type>
         </dependency>
 
-        <dependency>
-            <groupId>org.acme.generic.jms.ra.web</groupId>
-            <artifactId>jboss-generic-jms-ra-web</artifactId>
+        <!-- <dependency>
+            <groupId>org.jboss.jms.tibco.int.web</groupId>
+            <artifactId>jboss-as-jms-tibco-int-web</artifactId>
+            <scope>compile</scope>
             <type>war</type>
-        </dependency>
+        </dependency> -->
 
     </dependencies>
 
@@ -48,10 +50,10 @@
             </plugin>
 
             <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
+                <groupId>org.jboss.as.plugins</groupId>
+                <artifactId>jboss-as-maven-plugin</artifactId>
                 <configuration>
-                    <version>7</version>
+                    <version>6</version>
                     <filename>${project.artifactId}-${project.version}.ear</filename>
                     <skip>false</skip>
                 </configuration>

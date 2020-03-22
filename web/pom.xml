@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.acme.generic.jms.ra</groupId>
-        <artifactId>jboss-generic-jms-ra</artifactId>
+        <groupId>org.jboss.jms.tibco.int</groupId>
+        <artifactId>jboss-as-jms-tibco-int</artifactId>
         <version>1.0</version>
     </parent>
 
-    <groupId>org.acme.generic.jms.ra.web</groupId>
-    <artifactId>jboss-generic-jms-ra-web</artifactId>
+    <groupId>org.jboss.jms.tibco.int.web</groupId>
+    <artifactId>jboss-as-jms-tibco-int-web</artifactId>
     <version>1.0</version>
 
 
@@ -20,33 +20,24 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
-            <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
-            <artifactId>jboss-jms-api_2.0_spec</artifactId>
+            <artifactId>jboss-jms-api_1.1_spec</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.spec.javax.ejb</groupId>
-            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+            <artifactId>jboss-ejb-api_3.1_spec</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging</artifactId>
+            <artifactId> jboss-logging</artifactId>
             <scope>provided</scope>
         </dependency>
-
-        <!--<dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <scope>provided</scope>
-        </dependency> -->
     </dependencies>
 
     <build>
@@ -56,11 +47,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.jboss.as.plugins</groupId>
+                <artifactId>jboss-as-maven-plugin</artifactId>
+                <configuration>
+                    <filename>${project.artifactId}.war</filename>
+                    <skip>false</skip>
+                </configuration>
+            </plugin>
 
         </plugins>
     </build>

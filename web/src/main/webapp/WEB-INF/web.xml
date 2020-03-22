@@ -4,11 +4,10 @@
     <display-name>WebClient</display-name>
     <servlet>
         <servlet-name>WebClient</servlet-name>
-        <servlet-class>org.acme.tibco.web.TibcoWebClient</servlet-class>
+        <servlet-class>org.jboss.tibco.web.TibcoWebClient</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>WebClient</servlet-name>
-        <url-pattern>*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

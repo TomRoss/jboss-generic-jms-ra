@@ -1,170 +1,155 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.acme.generic.jms.ra</groupId>
-    <artifactId>jboss-generic-jms-ra</artifactId>
-    <version>1.0</version>
+  <groupId>org.jboss.jms.tibco.int</groupId>
+  <artifactId>jboss-as-jms-tibco-int</artifactId>
+  <version>1.0</version>
 
-    <packaging>pom</packaging>
+  <packaging>pom</packaging>
 
-    <name>jboss-generic-jms-ra</name>
-    <url>http://maven.apache.org</url>
+  <name>jboss-as-jms-tibco-int</name>
+  <url>http://maven.apache.org</url>
 
-    <modules>
-        <module>ear</module>
-        <module>mdb</module>
-        <module>web</module>
-    </modules>
+  <modules>
+      <module>ear</module>
+      <module>mdb</module>
+      <module>web</module>
+  </modules>
 
-    <properties>
+  <properties>
 
-        <!-- packages -->
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.ee.spec.version>1.0.4.Final-redhat-00001</java.ee.spec.version>
-        <ejb3.ext.api.version>2.3.0.Final-redhat-00001</ejb3.ext.api.version>
-        <ejb3.api.version>3.2</ejb3.api.version>
-        <jboss.logging.version>3.3.0.Final</jboss.logging.version>
-        <jboss.concurrency.api.version>1.0.2.Final-redhat-1</jboss.concurrency.api.version>
 
-        <java.compiler.source>1.8</java.compiler.source>
-        <java.compiler.target>1.8</java.compiler.target>
-
-        <!-- plugings -->
-        <compiler.pluging.version>2.3.2</compiler.pluging.version>
-        <ear.plugin.version>2.10.1</ear.plugin.version>
-        <ejb.plugin.version>2.3</ejb.plugin.version>
-        <jar.plugin.version>3.1.2</jar.plugin.version>
-        <war.plugin.version>3.2.3</war.plugin.version>
-        <wildfly.plugin.version>2.0.1.Final</wildfly.plugin.version>
-
-    </properties>
-
-    <dependencyManagement>
-
-        <dependencies>
-
-            <dependency>
-                <groupId>org.jboss.spec</groupId>
-                <artifactId>jboss-javaee-8.0</artifactId>
-                <version>${java.ee.spec.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.ejb3</groupId>
-                <artifactId>jboss-ejb3-ext-api</artifactId>
-                <version>${ejb3.ext.api.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging</artifactId>
-                <scope>provided</scope>
-                <version>${jboss.logging.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.acme.generic.jms.ra.mdb</groupId>
-                <artifactId>jboss-generic-jms-ra-mdb</artifactId>
-                <version>1.0</version>
-                <type>ejb</type>
-            </dependency>
-
-            <dependency>
-                <groupId>org.acme.generic.jms.ra.web</groupId>
-                <artifactId>jboss-generic-jms-ra-web</artifactId>
-                <version>1.0</version>
-                <type>war</type>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
-                <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
-                <version>${jboss.concurrency.api.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>2.6.2</version>
-                <scope>provided</scope>
-            </dependency>
-        </dependencies>
-
-    </dependencyManagement>
-
-    <build>
-        <pluginManagement>
-
-            <plugins>
-                <!-- Compiler plugin enforces Java 1.6 compatibility and
-                    activates annotation processors -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${compiler.pluging.version}</version>
-                    <configuration>
-                        <source>${java.compiler.source}</source>
-                        <target>${java.compiler.target}</target>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-ear-plugin</artifactId>
-                    <version>${ear.plugin.version}</version>
-
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>${jar.plugin.version}</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-ejb-plugin</artifactId>
-                    <version>${ejb.plugin.version}</version>
-                    <configuration>
-                        <ejbVersion>${ejb3.api.version}</ejbVersion>
-                    </configuration>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-war-plugin</artifactId>
-                    <version>${war.plugin.version}</version>
-                </plugin>
+        <version.jboss.as.plugin>7.7.Final</version.jboss.as.plugin>
+        <version.org.jboss.spec.jboss.javaee.6.0>3.0.3.Final</version.org.jboss.spec.jboss.javaee.6.0>
+        <version.org.jboss.logging>3.1.4.GA</version.org.jboss.logging>
+        <version.org.jboss.ejb3.ext.api>2.2.0.Final</version.org.jboss.ejb3.ext.api>
+          <!-- other plugin versions -->
+        <version.compiler.plugin>3.5.1</version.compiler.plugin>
+        <version.ear.plugin>2.9</version.ear.plugin>
+        <version.ejb.plugin>2.3</version.ejb.plugin>
+        <version.jar.plugin>2.4</version.jar.plugin>
 
 
-                <plugin>
-                    <groupId>org.wildfly.plugins</groupId>
-                    <artifactId>wildfly-maven-plugin</artifactId>
-                    <version>${wildfly.plugin.version}</version>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-            </plugins>
+          <!-- maven-compiler-plugin -->
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
 
-        </pluginManagement>
 
-        <plugins>
-            <plugin>
+  </properties>
+
+  <dependencyManagement>
+      
+    <dependencies>
+
+        <dependency>
+            <groupId>org.jboss.spec</groupId>
+            <artifactId>jboss-javaee-6.0</artifactId>
+            <version>${version.org.jboss.spec.jboss.javaee.6.0}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-ext-api</artifactId>
+            <version>${version.org.jboss.ejb3.ext.api}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <scope>provided</scope>
+            <version>${version.org.jboss.logging}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.jboss.jms.tibco.int.mdb</groupId>
+            <artifactId>jboss-as-jms-tibco-int-mdb</artifactId>
+            <version>${project.version}</version>
+            <type>ejb</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.jms.tibco.int.web</groupId>
+            <artifactId>jboss-as-jms-tibco-int-web</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+    </dependencies>
+
+  </dependencyManagement>
+
+  <build>
+      <pluginManagement>
+
+          <plugins>
+              <!-- Compiler plugin enforces Java 1.6 compatibility and
+                  activates annotation processors -->
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-compiler-plugin</artifactId>
+                  <version>${version.compiler.plugin}</version>
+                  <configuration>
+                      <source>${maven.compiler.source}</source>
+                      <target>${maven.compiler.target}</target>
+                  </configuration>
+              </plugin>
+
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-ear-plugin</artifactId>
+                  <version>${version.ear.plugin}</version>
+
+              </plugin>
+
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-jar-plugin</artifactId>
+                  <version>${version.jar.plugin}</version>
+              </plugin>
+
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-ejb-plugin</artifactId>
+                  <version>${version.ejb.plugin}</version>
+                  <configuration>
+                      <ejbVersion>3.1</ejbVersion>
+                  </configuration>
+              </plugin>
+
+              <plugin>
+                  <groupId>org.jboss.as.plugins</groupId>
+                  <artifactId>jboss-as-maven-plugin</artifactId>
+                  <version>${version.jboss.as.plugin}</version>
+                  <configuration>
+                      <skip>true</skip>
+                  </configuration>
+              </plugin>
+
+             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20.1</version>
 
-    </build>
+             </plugin>
+          </plugins>
+
+      </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${version.compiler.plugin}</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

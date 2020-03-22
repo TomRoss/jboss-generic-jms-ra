@@ -4,16 +4,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.acme.generic.jms.ra</groupId>
-        <artifactId>jboss-generic-jms-ra</artifactId>
+        <groupId>org.jboss.jms.tibco.int</groupId>
+        <artifactId>jboss-as-jms-tibco-int</artifactId>
         <version>1.0</version>
     </parent>
 
-    <groupId>org.acme.generic.jms.ra.mdb</groupId>
-    <artifactId>jboss-generic-jms-ra-mdb</artifactId>
+    <groupId>org.jboss.jms.tibco.int.mdb</groupId>
+    <artifactId>jboss-as-jms-tibco-int-mdb</artifactId>
     <version>1.0</version>
 
-    <name>jboss-generic-jms-ra-mdb</name>
+    <name>jboss-as-jms-tibco-int-mdb</name>
 
     <packaging>ejb</packaging>
 
@@ -25,7 +25,7 @@
 
         <dependency>
             <groupId>org.jboss.spec.javax.ejb</groupId>
-            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+            <artifactId>jboss-ejb-api_3.1_spec</artifactId>
             <scope>provided</scope>
         </dependency>
 
@@ -37,27 +37,9 @@
         
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
-            <artifactId>jboss-jms-api_2.0_spec</artifactId>
+            <artifactId>jboss-jms-api_1.1_spec</artifactId>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>javax.persistence</groupId>
-            <artifactId>javax.persistence-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.enterprise.concurrent</groupId>
-            <artifactId>jboss-concurrency-api_1.0_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-2.1-api</artifactId>
-            <scope>provided</scope>
-        </dependency> -->
 
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -83,9 +65,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-ejb-plugin</artifactId>
                 <configuration>
-                    <ejbVersion>${ejb3.api.version}</ejbVersion>
+                    <ejbVersion>3.1</ejbVersion>
                 </configuration>
             </plugin>
+
+
         </plugins>
     </build>
 
