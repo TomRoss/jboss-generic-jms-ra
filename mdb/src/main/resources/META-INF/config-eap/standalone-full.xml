@@ -563,7 +563,7 @@
                             </config-property>
                             <xa-pool>
                                 <min-pool-size>5</min-pool-size>
-                                <max-pool-size>10</max-pool-size>
+                                <max-pool-size>15</max-pool-size>
                             </xa-pool>
                             <recovery no-recovery="false">
                                 <recover-credential>
@@ -590,7 +590,7 @@
                             </config-property>
                             <xa-pool>
                                 <min-pool-size>5</min-pool-size>
-                                <max-pool-size>10</max-pool-size>
+                                <max-pool-size>15</max-pool-size>
                             </xa-pool>
                             <recovery no-recovery="false">
                                 <recover-credential>
@@ -719,9 +719,4 @@
             <remote-destination host="localhost" port="25"/>
         </outbound-socket-binding>
     </socket-binding-group>
-    <deployments>
-        <deployment name="jboss-generic-jmsra-ear-1.0.ear" runtime-name="jboss-generic-jmsra-ear-1.0.ear">
-            <content sha1="535e93c99e4b9c4cf5ebc428e72c71ba9c164332"/>
-        </deployment>
-    </deployments>
 </server>
