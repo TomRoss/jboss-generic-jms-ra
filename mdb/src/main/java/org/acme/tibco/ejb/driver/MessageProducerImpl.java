@@ -22,121 +22,184 @@ import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.Schedule;
 import javax.ejb.Singleton;
-import javax.jms.JMSException;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueConnection;
-import javax.jms.QueueSession;
-import javax.jms.QueueSender;
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 import javax.enterprise.concurrent.ManagedExecutorService;
 
 import org.jboss.logging.Logger;
 
-@Singleton
-public class MessageProducerImpl implements MessageProducer{
-    private static final Logger LOG = Logger.getLogger(MessageProducerImpl.class);
-    public static final int MESSAGE_COUNT = 200;
+import java.util.concurrent.atomic.AtomicInteger;
 
-    @Resource(name= "${tibco.qcf.fqn}")
-    private QueueConnectionFactory qcf;
+@Singleton
+public class MessageProducerImpl implements MessageProducer {
+    private static final Logger LOG = Logger.getLogger(MessageProducerImpl.class);
+    public static final int MESSAGE_COUNT = 100;
+
+    @Resource(name = "${tibco.jms.context.fqn}")
+    private QueueConnectionFactory ccf;
 
     @Resource(name = "${tibco.in.queue.fqn}")
-    private Queue queue;
-    private QueueConnection queueConnection = null;
-    private QueueSender queueSender = null;
-    private QueueSession queueSession = null;
+    private Queue inQueue;
+
+    @Resource(name = "${tibco.test.topic.fqn}")
+    private Topic testTopic;
+
+    @Resource(name = "${tibco.in.topic.fqn}")
+    private Topic inTopic;
 
     @Resource(name = "DefaultManagedExecutorService")
     private ManagedExecutorService mes;
 
-    @Schedule(second = "*/45", minute = "*", hour = "*", info = "MyTimer", persistent = false)
-    public void sendMessges(){
+    private AtomicInteger nonDurableMessagesTotal = new AtomicInteger(0);
+    private AtomicInteger durableMessagesTotal = new AtomicInteger(0);
+    private AtomicInteger messagesTotal = new AtomicInteger(0);
+
+    @Schedule(second = "*/30", minute = "*", hour = "*", info = "MyTimer", persistent = false)
+    public void sendMessges() {
 
         mes.submit(new SendMessages());
+        mes.submit(new PublishMessages());
+        mes.submit(new PublishDurableMessages());
+
     }
 
-    class SendMessages implements Runnable{
+    class SendMessages implements Runnable {
 
         TextMessage textMessage = null;
 
         @Override
         public void run() {
 
-            try{
+            try (JMSContext jmsContext = ccf.createContext(Session.AUTO_ACKNOWLEDGE)) {
 
-                queueConnection = qcf.createQueueConnection();
-
-                queueSession = queueConnection.createQueueSession(true,Session.SESSION_TRANSACTED);
+                JMSProducer jmsProducer = jmsContext.createProducer();
 
                 for (int i = 0; i < MESSAGE_COUNT; i++) {
 
-                    textMessage = queueSession.createTextMessage("Simple test message");
+                    textMessage = jmsContext.createTextMessage("Simple test message");
 
-                    queueSender = queueSession.createSender(queue);
+                    jmsProducer.send(inQueue, textMessage);
 
-                    queueSender.send(textMessage);
-
-                    textMessage = null;
+                    messagesTotal.incrementAndGet();
                 }
 
-            } catch (JMSException jmsException) {
+            } catch (JMSRuntimeException jmsRuntimeException) {
 
-                LOG.errorf(jmsException,"ERROR - JMSException");
+                LOG.errorf(jmsRuntimeException, "ERROR - JMSException");
 
-            } catch (Exception ex){
+            } catch (Exception ex) {
 
-                LOG.errorf(ex,"ERROR- Caught general exception");
+                LOG.errorf(ex, "ERROR- Caught general exception");
 
             } finally {
 
                 try {
-                    if (queueSender != null) {
-                        queueSender.close();
-                        queueSender = null;
-                    }
 
-                    if (queueSession != null) {
-                        queueSession.close();
-                        queueSession = null;
-                    }
-
-                    if (queueConnection != null) {
-                        queueConnection.close();
-                    }
-
-                    LOG.infof("JMS resources cleaned up");
+                    LOG.infof("Sent messages sent to queue '%s'", inQueue.getQueueName());
 
                 } catch (JMSException jmsException) {
 
-                    LOG.warnf(jmsException,"");
+                    LOG.warnf("Can't get queue name");
+                }
+            }
+        }
+    }
+
+    class PublishMessages implements Runnable {
+        TextMessage textMessage = null;
+
+        @Override
+        public void run() {
+
+            try (JMSContext jmsContext = ccf.createContext(Session.AUTO_ACKNOWLEDGE)) {
+
+                JMSProducer jmsProducer = jmsContext.createProducer();
+
+                for (int i = 0; i < MESSAGE_COUNT; i++) {
+
+                    textMessage = jmsContext.createTextMessage("Simple test message");
+
+                    jmsProducer.send(testTopic, textMessage);
+
+                    nonDurableMessagesTotal.incrementAndGet();
+                }
+
+            } catch (JMSRuntimeException jmsRuntimeException) {
+
+                LOG.errorf("Error publishing messages to topic");
+
+            } finally {
+                try {
+
+                    LOG.infof("Published messages on topic '%s'", testTopic.getTopicName());
+
+                } catch (JMSException jmsException) {
+
+                    LOG.warnf("Can't get topic name");
+
+                }
+            }
+        }
+    }
+
+    class PublishDurableMessages implements Runnable {
+        TextMessage textMessage = null;
+
+        @Override
+        public void run() {
+
+            try (JMSContext jmsContext = ccf.createContext(Session.AUTO_ACKNOWLEDGE)) {
+
+                JMSProducer jmsProducer = jmsContext.createProducer();
+
+                for (int i = 0; i < MESSAGE_COUNT; i++) {
+
+                    textMessage = jmsContext.createTextMessage("Simple test message");
+
+                    jmsProducer.send(inTopic, textMessage);
+
+                    durableMessagesTotal.incrementAndGet();
+
+                }
+
+            } catch (JMSRuntimeException jmsRuntimeException) {
+
+                LOG.errorf("Error publishing messages to topic");
+
+            } finally {
+
+                try {
+
+                    LOG.infof("Published messages on topic '%s'", inTopic.getTopicName());
+
+                } catch (JMSException jmsException) {
+
+                    LOG.warnf("Can't get topic name");
+
                 }
             }
         }
     }
 
 
-
-
     @PostConstruct
-    public void init(){
+    public void init() {
         LOG.info("Creating Producer Bean.");
     }
 
     @PreDestroy
-    public void cleanUp(){
+    public void cleanUp() {
 
-        if (!mes.isShutdown()){
+        LOG.info("Destroying Sender Bean.");
+
+        LOG.infof("Sent or published - messages = %d, non-durable messages = %d, durable messages = %d", messagesTotal.get(), nonDurableMessagesTotal.get(), durableMessagesTotal.get());
+
+        if (!mes.isShutdown()) {
 
             LOG.info("Shutting down the executor service.");
 
             mes.shutdown();
 
         }
-
-        LOG.info("Destroying Sender Bean.");
 
     }
 }

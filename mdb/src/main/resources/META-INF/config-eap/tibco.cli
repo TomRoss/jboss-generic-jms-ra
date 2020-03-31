@@ -79,6 +79,7 @@ batch
 /subsystem="naming"/binding="java:/jms/tibco/queue/targetQueue":add(binding-type="lookup",lookup="java:global/tibco/jms/queue/targetQueue")
 /subsystem="naming"/binding="java:/jms/tibco/queue/inQueue":add(binding-type="lookup",lookup="java:global/tibco/jms/queue/inQueue")
 /subsystem="naming"/binding="java:/jms/tibco/queue/outQueue":add(binding-type="lookup",lookup="java:global/tibco/jms/queue/outQueue")
+/subsystem="naming"/binding="java:/jms/tibco/topic/testTopic":add(binding-type="lookup",lookup="java:global/tibco/jms/topic/testTopic")
 /subsystem="naming"/binding="java:/jms/tibco/topic/inTopic":add(binding-type="lookup",lookup="java:global/tibco/jms/topic/inTopic")
 /subsystem="naming"/binding="java:/jms/tibco/topic/outTopic":add(binding-type="lookup",lookup="java:global/tibco/jms/topic/outTopic")
 
@@ -100,20 +101,40 @@ batch
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="testQueue":add(class-name="java.jms.Queue",enabled="true",jndi-name="java:/tibco/jms/queue/testQueue")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="targetTopic":add(class-name="java.jms.Topic",enabled="true",jndi-name="java:/tibco/jms/topic/targettopic")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/admin-objects="inTopic":add(class-name="java.jms.Topic",enabled="true",jndi-name="java:/tibco/jms/topic/outTopic")
+
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF":add(class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory",jndi-name="java:/jms/tibco/cf/XATopicConnectionFactory",max-pool-size="15",min-pool-size="5",no-recovery="false",recovery-password="${tibco.password}",recovery-username="${tibco.user}")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="ConnectionFactory":add(value="jms/cf/XATopicConnectionFactory")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="UserName":add(value="${tibco.user}")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="SessionDefaultType":add(value="javax.jms.Topic")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="Password":add(value="${tibco.password}")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="JndiParameters":add(value="java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://${tibco.host}:${tibco.port}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XATCF"/config-properties="JMS20":add(value="false")
+
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF":add(class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory",jndi-name="java:/jms/tibco/cf/XAQueueConnectionFactory",max-pool-size="15",min-pool-size="5",no-recovery="false",recovery-password="${tibco.password}",recovery-username="${tibco.user}")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="ConnectionFactory":add(value="jms/cf/XAQueueConnectionFactory")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="UserName":add(value="${tibco.user}")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="SessionDefaultType":add(value="javax.jms.Queue")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="Password":add(value="${tibco.password}")
 /subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="JndiParameters":add(value="java.naming.security.principal=${tibco.user};java.naming.security.credentials\=${tibco.password};java.naming.factory.initial\=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://${tibco.host}:${tibco.port}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XAQCF"/config-properties="JMS20":add(value="false")
+
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XACCF":add(class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory",jndi-name="java:/jms/tibco/cf/XAJMSContextConnectionFactory",max-pool-size="15",min-pool-size="5",no-recovery="false",recovery-password="${tibco.password}",recovery-username="${tibco.user}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XACCF"/config-properties="ConnectionFactory":add(value="jms/cf/XAQueueConnectionFactory")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XACCF"/config-properties="UserName":add(value="${tibco.user}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XACCF"/config-properties="SessionDefaultType":add(value="javax.jms.JMSContext")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XACCF"/config-properties="Password":add(value="${tibco.password}")
+/subsystem="resource-adapters"/resource-adapter="genericjms-xa"/connection-definitions="XACCF"/config-properties="JndiParameters":add(value="java.naming.security.principal\=${tibco.user};java.naming.security.credentials\=${tibco.password};java.naming.factory.initial\=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url\=tcp://${tibco.host}:${tibco.port}")
 
 /subsystem=resource-adapters/resource-adapter=genericjms-xa:write-attribute(name=statistics-enabled,value=true)
+
+/subsystem="resource-adapters"/resource-adapter="genericjms":add(module="org.jboss.genericjms:main",statistics-enabled="true",transaction-support="NoTransaction")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="CCF":add(class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory",jndi-name="java:/jms/tibco/cf/JMSContextConnectionFactory",max-pool-size="15",min-pool-size="5",no-recovery="true",recovery-password="${tibco.password}",recovery-username="${tibco.user}")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="CCF"/config-properties="ConnectionFactory":add(value="jms/cf/ConnectionFactory")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="CCF"/config-properties="UserName":add(value="${tibco.user}")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="CCF"/config-properties="SessionDefaultType":add(value="javax.jms.JMSContext")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="CCF"/config-properties="Password":add(value="${tibco.password}")
+/subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="CCF"/config-properties="JndiParameters":add(value="java.naming.security.principal\=${tibco.user};java.naming.security.credentials\=${tibco.password};java.naming.factory.initial\=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url\=tcp://${tibco.host}:${tibco.port}")
+
 
 run-batch
 
