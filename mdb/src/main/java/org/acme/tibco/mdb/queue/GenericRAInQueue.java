@@ -18,8 +18,16 @@ import javax.ejb.TransactionAttributeType;
 import org.jboss.ejb3.annotation.DeliveryActive;
 import org.jboss.ejb3.annotation.ResourceAdapter;
 
-import javax.jms.*;
-
+import javax.jms.Destination;
+import javax.jms.JMSContext;
+import javax.jms.JMSException;
+import javax.jms.JMSProducer;
+import javax.jms.MessageListener;
+import javax.jms.Message;
+import javax.jms.MapMessage;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.Session;
+import javax.jms.TemporaryQueue;
 import javax.naming.Context;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -59,11 +67,9 @@ public class GenericRAInQueue implements MessageListener {
     @Resource
     private MessageDrivenContext mdbCtx;
     @Resource(name = "${tibco.out.queue.fqn}")
-    private Queue outQueue;
-    private QueueConnection queueConnection = null;
-    private QueueSession queueSession = null;
-    private QueueSender queueSender = null;
-    private TextMessage textMessage = null;
+    //private TemporaryQueue tempQueue = null;
+    private Destination tempQueue = null;
+    private MapMessage mapMessage = null;
     private int mdbID = 0;
     private int msgCnt = 0;
 
@@ -75,25 +81,27 @@ public class GenericRAInQueue implements MessageListener {
     public void onMessage(Message message) {
 
         try {
-            if (message instanceof TextMessage) {
+            if (message instanceof MapMessage) {
 
                 if (LOG.isDebugEnabled()) {
                     LOG.infof("MDB[%d] Got message - '%s'.", mdbID, message);
                 }
 
-                textMessage = (TextMessage) message;
+                mapMessage = (MapMessage) message;
 
                 try (JMSContext context = connectionFactory.createContext(Session.SESSION_TRANSACTED)) {
 
                     JMSProducer jmsProducer = context.createProducer();
 
-                    jmsProducer.send(outQueue, textMessage);
+                    tempQueue = mapMessage.getJMSReplyTo();
+
+                    jmsProducer.send(tempQueue, mapMessage);
 
                     msgCnt++;
                 }
 
-                if (LOG.isDebugEnabled()) {
-                    LOG.infof("MDB[%d] Message '%d' sent to destiantion '%s'", mdbID, textMessage.getText(), outQueue.getQueueName());
+                if (LOG.isInfoEnabled()) {
+                    LOG.infof("MDB[%d] Message '%s' sent to destiantion '%s'", mdbID, mapMessage.toString(), tempQueue.toString());
                 }
             }
 
