@@ -1,4 +1,4 @@
-package org.jboss.tibco.web;
+package org.acme.genericjmsra.web;
 
 
 import javax.annotation.Resource;

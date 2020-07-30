@@ -1,4 +1,4 @@
-package org.jboss.tibco.ejb;
+package org.acme.genericjmsra.ejb;
 
 import javax.ejb.Local;
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jboss.tibco.jpa;
+package org.acme.genericjmsra.jpa;
 
 import java.util.Objects;
 

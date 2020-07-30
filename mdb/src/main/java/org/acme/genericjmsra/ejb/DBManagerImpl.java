@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jboss.tibco.ejb;
+package org.acme.genericjmsra.ejb;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;

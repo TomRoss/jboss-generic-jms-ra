@@ -1,4 +1,4 @@
-package org.jboss.tibco.mdb;
+package org.acme.genericjmsra.mdb;
 
 import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
@@ -30,10 +30,7 @@ import javax.jms.TextMessage;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import java.net.URL;
 
 /**
  * Created by tomr on 27/07/15.
@@ -47,6 +44,7 @@ import java.net.URL;
         @ActivationConfigProperty(propertyName = "connectionFactory", propertyValue = "${tibco.qcf}"),
         @ActivationConfigProperty(propertyName = "user", propertyValue = "${tibco.user}"),
         @ActivationConfigProperty(propertyName = "password", propertyValue = "${tibco.password}"),
+        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "30"),
         @ActivationConfigProperty(propertyName = "reconnectAttempts", propertyValue = "15")
 
 })
@@ -59,13 +57,14 @@ public class GenericRAInQueue implements MessageListener {
     private static final Logger LOG = Logger.getLogger(GenericRAInQueue.class);
     private static AtomicInteger mdbCnt = new AtomicInteger(1);
 
-    @Resource(name = "${tibco.qcf.fqn}")
+    @Resource(lookup = "${tibco.qcf.fqn}")
     private QueueConnectionFactory queueConnectionFactory;
 
-    @Resource(name = "${tibco.external.context}")
+    @Resource(lookup= "${tibco.external.context}")
     private Context externalContext;
 
     private String outQueueName = "java:/jms/tibco/queue/outQueue";
+    @Resource(lookup = "java:/jms/tibco/queue/outQueue")
     private Queue outQueue = null;
     private QueueConnection queueConnection = null;
     private QueueSender queueSender = null;
@@ -76,7 +75,7 @@ public class GenericRAInQueue implements MessageListener {
 
     public GenericRAInQueue() {
 
-        mdbID = mdbCnt.getAndIncrement();
+
 
     }
 
@@ -86,22 +85,30 @@ public class GenericRAInQueue implements MessageListener {
         try {
             if (message instanceof TextMessage) {
 
-                LOG.infof("MDB[%d] Got message - '%s'.",mdbID,message);
+                if (LOG.isTraceEnabled()) {
+                    LOG.tracef("MDB[%d] Got message - '%s'.", mdbID, message);
+                }
 
                 textMessage = (TextMessage) message;
 
                 textMessage.getText();
 
-               /* if (LOG.isDebugEnabled()){
+               if (LOG.isTraceEnabled()){
 
-                    LOG.debugf("MDB[%d] Createing connection.",mdbID);
+                    LOG.tracef("MDB[%d] Createing connection.",mdbID);
                 }
+
+               long start = System.currentTimeMillis();
 
                 queueConnection = queueConnectionFactory.createQueueConnection("admin","quick123+");
 
-                if (LOG.isDebugEnabled()){
+                long finish = System.currentTimeMillis();
 
-                    LOG.debugf("MDB[%d] Connection created.",mdbID);
+                LOG.infof("MDB[%d] Ceated connection in %d milliseconds",mdbID,(finish-start));
+
+                if (LOG.isTraceEnabled()){
+
+                    LOG.tracef("MDB[%d] Connection created.",mdbID);
                 }
 
                 if (LOG.isDebugEnabled()){
@@ -138,7 +145,7 @@ public class GenericRAInQueue implements MessageListener {
 
                 if (LOG.isDebugEnabled()){
                     LOG.debugf("MDB[%d] Message '%s% sent to queue '%s'.",mdbID,message.toString(),outQueue.getQueueName());
-                }*/
+                }
 
                 msgCnt++;
             }
@@ -232,6 +239,10 @@ public class GenericRAInQueue implements MessageListener {
 
             }
         }
+
+        mdbID = mdbCnt.getAndIncrement();
+
+        LOG.infof("MDB[%d] Constructed",mdbID);
 
     }
 

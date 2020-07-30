@@ -1,4 +1,4 @@
-package org.jboss.tibco.mdb;
+package org.acme.genericjmsra.mdb;
 
 import org.jboss.ejb3.annotation.DeliveryActive;
 import org.jboss.ejb3.annotation.ResourceAdapter;
