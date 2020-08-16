@@ -28,8 +28,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -37,15 +35,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 
-@MessageDriven(name = "GenericRAQueueMDB", activationConfig = {
+@MessageDriven(name = "GenericRAInQueueMDB", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "jms/queue/inQueue"),
         @ActivationConfigProperty(propertyName = "jndiParameters", propertyValue = "java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://aza:7222"),
         @ActivationConfigProperty(propertyName = "connectionFactory", propertyValue = "${tibco.qcf}"),
         @ActivationConfigProperty(propertyName = "user", propertyValue = "${tibco.user}"),
         @ActivationConfigProperty(propertyName = "password", propertyValue = "${tibco.password}"),
-        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "30"),
-        @ActivationConfigProperty(propertyName = "reconnectAttempts", propertyValue = "15")
+        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "${in.mdb.maxsession}"),
+        @ActivationConfigProperty(propertyName = "reconnectAttempts", propertyValue = "${in.mdb.reconnect.attempts}")
 
 })
 @DeliveryActive(true)
@@ -63,8 +61,7 @@ public class GenericRAInQueue implements MessageListener {
     @Resource(lookup= "${tibco.external.context}")
     private Context externalContext;
 
-    private String outQueueName = "java:/jms/tibco/queue/outQueue";
-    @Resource(lookup = "java:/jms/tibco/queue/outQueue")
+    @Resource(lookup = "${tibco.out.queue.fqn}")
     private Queue outQueue = null;
     private QueueConnection queueConnection = null;
     private QueueSender queueSender = null;
@@ -81,6 +78,11 @@ public class GenericRAInQueue implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
+        long startonMessage = 0;
+
+        if (LOG.isTraceEnabled()) {
+            startonMessage = System.currentTimeMillis();
+        }
 
         try {
             if (message instanceof TextMessage) {
@@ -147,6 +149,8 @@ public class GenericRAInQueue implements MessageListener {
                     LOG.debugf("MDB[%d] Message '%s% sent to queue '%s'.",mdbID,message.toString(),outQueue.getQueueName());
                 }
 
+                doDelay(200);
+
                 msgCnt++;
             }
 
@@ -191,6 +195,14 @@ public class GenericRAInQueue implements MessageListener {
             } catch (JMSException jmsException){
 
                 LOG.warnf(jmsException,"[%d] Cleaning up JMS resource.",mdbID);
+
+            } finally {
+
+                if (LOG.isTraceEnabled()){
+                    long finishonMessage = System.currentTimeMillis();
+                    LOG.tracef("MDB[%s] onMessage method completed in %d milliseconds",mdbID,(finishonMessage - startonMessage));
+                }
+
             }
 
         }
@@ -198,47 +210,6 @@ public class GenericRAInQueue implements MessageListener {
 
     @PostConstruct
     public void init(){
-        Context ctx = null;
-
-        try {
-            //Object o = externalContext.lookup("jms/cf/XAQueueConnectionFactory");
-
-            //QueueConnectionFactory oq = (QueueConnectionFactory) o;
-
-            //Properties env = new Properties();
-            //java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://aza:7222"),
-           // env.setProperty("java.naming.security.principal","");
-            //env.setProperty("java.naming.security.credentials","");
-            //env.setProperty("java.naming.factory.initial","com.tibco.tibjms.naming.TibjmsInitialContextFactory");
-            //env.setProperty("java.naming.provider.url","tcp://");
-
-            ctx = new InitialContext();
-
-            Object obj = ctx.lookup(outQueueName);
-
-            //URL url = javax.jms.Queue.class.getProtectionDomain().getCodeSource().getLocation();
-            //Class c = obj.getClass().getSuperclass();
-
-            outQueue = (Queue) obj;
-
-            LOG.debugf("MDB[%d] Out destination found");
-
-        } catch (NamingException namingException){
-
-            LOG.errorf(namingException,"'MDB[%d] Error",mdbID);
-
-        } finally {
-
-            try {
-
-                ctx.close();
-
-            } catch (NamingException namingEx) {
-
-                LOG.warnf(namingEx, "MDB[%d] Can't close initial context");
-
-            }
-        }
 
         mdbID = mdbCnt.getAndIncrement();
 
@@ -252,5 +223,18 @@ public class GenericRAInQueue implements MessageListener {
         LOG.infof("MDB[%d] Shutting down.Processed %d messages.",mdbID,msgCnt);
 
 
+    }
+
+    private void doDelay(long delay){
+
+        try {
+
+            Thread.sleep(delay);
+
+        } catch (InterruptedException interruptedException){
+
+            LOG.warnf("MDB[%s] This should not happen",mdbID);
+
+        }
     }
 }
