@@ -30,7 +30,7 @@
      <java.compiler.target>1.8</java.compiler.target>
 
      <!-- plugings -->
-     <compiler.pluging.version>2.3.2</compiler.pluging.version>
+     <compiler.pluging.version>3.8.1</compiler.pluging.version>
      <ear.plugin.version>2.10.1</ear.plugin.version>
      <ejb.plugin.version>2.3</ejb.plugin.version>
      <jar.plugin.version>3.1.2</jar.plugin.version>
@@ -58,6 +58,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.1-api</artifactId>
+            <version>1.0.2.Final-redhat-1</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>

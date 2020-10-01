@@ -17,52 +17,119 @@
 
 package org.acme.genericjmsra.jpa;
 
+
+import java.util.Date;
 import java.util.Objects;
 
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.GenerationType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Table;
+
+import org.jboss.logging.Logger;
+
+@Table(name = "dbrecord")
+@Entity
 public class DBRecord {
-    private int indx;
-    private String recordName = null;
+    private static final long serialVersionUID = -4610973432199628746L;
+    private static final Logger LOG = Logger.getLogger(DBRecord.class);
 
-    public DBRecord(int indx, String recordName) {
-        this.indx = indx;
-        this.recordName = recordName;
+    @Id
+    @Column(name = "message_uuid",nullable = false,unique = true)
+    private String message_uuid;
+
+    @Column(name = "creator_id",nullable = false)
+    private String creator;
+
+    @Column(name = "updator_id",nullable = true)
+    private String updator;
+
+    @Column(name = "message_text",nullable = false)
+    private String messageText;
+
+    @Column(name = "message_created",nullable = false)
+    public Date messageCreated;
+
+    @Column(name = "message_updated",nullable = true )
+    public Date messageUpdated;
+
+    public DBRecord() {
+
     }
 
-    public int getIndx() {
-        return indx;
+    public DBRecord(String message_uuid, String creator, String updator, String messageText) {
+        this.message_uuid = message_uuid;
+        this.creator = creator;
+        this.updator = updator;
+        this.messageText = messageText;
     }
 
-    public void setIndx(int indx) {
-        this.indx = indx;
+    public String getMessage_uuid() {
+        return message_uuid;
     }
 
-    public String getRecordName() {
-        return recordName;
+    public void setMessage_uuid(String message_uuid) {
+        this.message_uuid = message_uuid;
     }
 
-    public void setRecordName(String recordName) {
-        this.recordName = recordName;
+    public String getCreator() {
+        return creator;
+    }
+
+    public void setCreator(String creator) {
+        this.creator = creator;
+    }
+
+    public String getUpdator() {
+        return updator;
+    }
+
+    public void setUpdator(String updator) {
+        this.updator = updator;
+    }
+
+    public String getMessageText() {
+        return messageText;
+    }
+
+    public void setMessageText(String messageText) {
+        this.messageText = messageText;
+    }
+
+    public Date getMessageCreated() {
+        return messageCreated;
+    }
+
+    public void setMessageCreated(Date messageCreated) {
+        this.messageCreated = messageCreated;
+    }
+
+    public Date getMessageUpdated() {
+        return messageUpdated;
+    }
+
+    public void setMessageUpdated(Date messageUpdated) {
+        this.messageUpdated = messageUpdated;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DBRecord)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         DBRecord dbRecord = (DBRecord) o;
-        return getIndx() == dbRecord.getIndx() &&
-                Objects.equals(getRecordName(), dbRecord.getRecordName());
+        return getMessage_uuid().equals(dbRecord.getMessage_uuid()) &&
+                getCreator().equals(dbRecord.getCreator()) &&
+                Objects.equals(getUpdator(), dbRecord.getUpdator()) &&
+                getMessageText().equals(dbRecord.getMessageText()) &&
+                getMessageCreated().equals(dbRecord.getMessageCreated()) &&
+                Objects.equals(getMessageUpdated(), dbRecord.getMessageUpdated());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getIndx(), getRecordName());
-    }
-
-    @Override
-    public String toString() {
-        return "DBRecord{" +
-                "indx=" + indx +
-                ", recordName='" + recordName + '\'' +
-                '}';
+        return Objects.hash(getMessage_uuid(), getCreator(), getUpdator(), getMessageText(), getMessageCreated(), getMessageUpdated());
     }
 }

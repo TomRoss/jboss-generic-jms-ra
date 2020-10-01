@@ -1,5 +1,9 @@
 package org.acme.genericjmsra.mdb;
 
+import org.acme.genericjmsra.ejb.DBManager;
+import org.acme.genericjmsra.ejb.DBManagerImpl;
+import org.acme.genericjmsra.util.MessageRecord;
+
 import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
 
@@ -13,6 +17,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 import javax.ejb.TransactionManagement;
+import javax.ejb.EJB;
 
 import org.jboss.ejb3.annotation.DeliveryActive;
 
@@ -51,11 +56,16 @@ public class GenericRAOutQueue implements MessageListener {
     private static final Logger LOG = Logger.getLogger(GenericRAOutQueue.class);
     private static AtomicInteger mdbCnt = new AtomicInteger(1);
 
+    private TextMessage textMessage = null;
+
     private int mdbID = 0;
     private int msgCnt = 0;
     private long startOnMessage = 0;
     private long finisOnMessage = 0;
+    @EJB(name = "DBManager")
+    private DBManager ejb;
 
+    private MessageRecord msgRecord = null;
     @Override
     public void onMessage(Message message) {
         startOnMessage = System.currentTimeMillis();
@@ -67,11 +77,19 @@ public class GenericRAOutQueue implements MessageListener {
 
             }
 
+            textMessage = (TextMessage) message;
+
+            msgRecord = new MessageRecord(message.getJMSMessageID(),"OutQueueMDB" + mdbID, textMessage.getText());
+
+            ejb.updateRecord(msgRecord);
+
             if (message instanceof TextMessage) {
 
                 msgCnt++;
 
             }
+
+        } catch (JMSException jmsException) {
 
         } finally {
             finisOnMessage = System.currentTimeMillis();
