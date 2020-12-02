@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @MessageDriven(name = "GenericRATopicMDB", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic"),
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "jms/topic/inTopic"),
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "${tibco.in.topic}"),
         @ActivationConfigProperty(propertyName = "jndiParameters", propertyValue = "java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://aza:7222"),
         @ActivationConfigProperty(propertyName = "connectionFactory", propertyValue = "${tibco.tcf}"),
         @ActivationConfigProperty(propertyName = "user", propertyValue = "${tibco.user}"),
@@ -54,7 +54,6 @@ public class GenericRAInTopic implements MessageListener {
     @Resource(name = "${tibco.external.context}")
     private Context externalContext;
 
-    private String  outTopicName = "java:/tibco/jms/topic/outTopic";
     @Resource(name = "${tibco.out.topic.fqn}")
     private Topic outTopic;
     private TopicConnection topicConnection = null;
@@ -69,7 +68,7 @@ public class GenericRAInTopic implements MessageListener {
 
     public GenericRAInTopic() {
 
-        mdbID = mdbCnt.getAndIncrement();
+
 
     }
 
@@ -164,22 +163,10 @@ public class GenericRAInTopic implements MessageListener {
     @PostConstruct
     public void init(){
 
-        try {
+        mdbID = mdbCnt.getAndIncrement();
 
-            outTopic = (Topic) externalContext.lookup(outTopicName);
+        LOG.infof("MDB[%d] Constructed",mdbID);
 
-        } catch (NamingException namingException) {
-
-            LOG.error(namingException);
-
-        } finally {
-
-            try {
-                externalContext.close();
-            } catch (NamingException namingException){
-
-            }
-        }
     }
 
     @PreDestroy
@@ -187,6 +174,7 @@ public class GenericRAInTopic implements MessageListener {
 
         LOG.infof("MDB[%d] Shutting down.Processed %d messages.",mdbID,msgCnt);
 
+        mdbCnt.decrementAndGet();
 
     }
 

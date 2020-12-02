@@ -1,8 +1,5 @@
 package org.acme.genericjmsra.mdb;
 
-import org.acme.genericjmsra.ejb.DBManager;
-import org.acme.genericjmsra.ejb.DBManagerImpl;
-import org.acme.genericjmsra.util.MessageRecord;
 
 import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
@@ -62,26 +59,20 @@ public class GenericRAOutQueue implements MessageListener {
     private int msgCnt = 0;
     private long startOnMessage = 0;
     private long finisOnMessage = 0;
-    @EJB(name = "DBManager")
-    private DBManager ejb;
 
-    private MessageRecord msgRecord = null;
+
     @Override
     public void onMessage(Message message) {
         startOnMessage = System.currentTimeMillis();
         try {
 
-            if (LOG.isDebugEnabled()) {
+            if (LOG.isInfoEnabled()) {
 
-                LOG.debugf("MDB[%s] Got message %s", mdbID, message.toString());
+                LOG.infof("MDB[%s] Got message %s", mdbID, message.toString());
 
             }
 
             textMessage = (TextMessage) message;
-
-            msgRecord = new MessageRecord(message.getJMSMessageID(),"OutQueueMDB" + mdbID, textMessage.getText());
-
-            ejb.updateRecord(msgRecord);
 
             if (message instanceof TextMessage) {
 
@@ -89,11 +80,9 @@ public class GenericRAOutQueue implements MessageListener {
 
             }
 
-        } catch (JMSException jmsException) {
-
         } finally {
             finisOnMessage = System.currentTimeMillis();
-            LOG.infof("MDB[%s] Message consumed in %d milliseconds",mdbCnt,(finisOnMessage - startOnMessage));
+            LOG.tracef("MDB[%s] Message consumed in %d milliseconds",mdbCnt,(finisOnMessage - startOnMessage));
 
         }
     }
@@ -112,6 +101,7 @@ public class GenericRAOutQueue implements MessageListener {
 
         LOG.infof("MDB[%d] Shutting down.Processed %d messages.",mdbID,msgCnt);
 
+        mdbCnt.decrementAndGet();
 
     }
 

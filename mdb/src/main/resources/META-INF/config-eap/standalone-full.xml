@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<server xmlns="urn:jboss:domain:8.0">
+<server xmlns="urn:jboss:domain:11.0">
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
         <extension module="org.jboss.as.connector"/>
@@ -25,6 +25,7 @@
         <extension module="org.jboss.as.weld"/>
         <extension module="org.wildfly.extension.batch.jberet"/>
         <extension module="org.wildfly.extension.bean-validation"/>
+        <extension module="org.wildfly.extension.clustering.web"/>
         <extension module="org.wildfly.extension.core-management"/>
         <extension module="org.wildfly.extension.discovery"/>
         <extension module="org.wildfly.extension.ee-security"/>
@@ -33,6 +34,7 @@
         <extension module="org.wildfly.extension.messaging-activemq"/>
         <extension module="org.wildfly.extension.microprofile.config-smallrye"/>
         <extension module="org.wildfly.extension.microprofile.health-smallrye"/>
+        <extension module="org.wildfly.extension.microprofile.metrics-smallrye"/>
         <extension module="org.wildfly.extension.microprofile.opentracing-smallrye"/>
         <extension module="org.wildfly.extension.request-controller"/>
         <extension module="org.wildfly.extension.security.manager"/>
@@ -102,7 +104,7 @@
         </access-control>
     </management>
     <profile>
-        <subsystem xmlns="urn:jboss:domain:logging:6.0">
+        <subsystem xmlns="urn:jboss:domain:logging:8.0">
             <console-handler name="CONSOLE">
                 <level name="INFO"/>
                 <formatter>
@@ -118,16 +120,16 @@
                 <append value="true"/>
             </periodic-rotating-file-handler>
             <logger category="com.arjuna">
-                <level name="TRACE"/>
+                <level name="WARN"/>
+            </logger>
+            <logger category="io.jaegertracing.Configuration">
+                <level name="WARN"/>
             </logger>
             <logger category="org.jboss.as.config">
-                <level name="TRACE"/>
+                <level name="DEBUG"/>
             </logger>
             <logger category="sun.rmi">
                 <level name="WARN"/>
-            </logger>
-            <logger category="org.jboss.as.naming">
-                <level name="TRACE"/>
             </logger>
             <root-logger>
                 <level name="INFO"/>
@@ -158,7 +160,7 @@
         <subsystem xmlns="urn:jboss:domain:core-management:1.0"/>
         <subsystem xmlns="urn:jboss:domain:datasources:5.0">
             <datasources>
-                <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
+                <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true" statistics-enabled="${wildfly.datasources.statistics-enabled:${wildfly.statistics-enabled:false}}">
                     <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
                     <driver>h2</driver>
                     <security>
@@ -177,6 +179,13 @@
             <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000" runtime-failure-causes-rollback="${jboss.deployment.scanner.rollback.on.failure:false}"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:discovery:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:distributable-web:2.0" default-session-management="default" default-single-sign-on-management="default">
+            <infinispan-session-management name="default" cache-container="web" granularity="SESSION">
+                <primary-owner-affinity/>
+            </infinispan-session-management>
+            <infinispan-single-sign-on-management name="default" cache-container="web" cache="sso"/>
+            <infinispan-routing cache-container="web" cache="routing"/>
+        </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee:4.0">
             <global-modules>
                 <module name="org.jboss.genericjms.provider" slot="main"/>
@@ -201,7 +210,7 @@
             <default-bindings context-service="java:jboss/ee/concurrency/context/default" datasource="java:jboss/datasources/ExampleDS" jms-connection-factory="java:jboss/DefaultJMSConnectionFactory" managed-executor-service="java:jboss/ee/concurrency/executor/default" managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default" managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:ee-security:1.0"/>
-        <subsystem xmlns="urn:jboss:domain:ejb3:5.0">
+        <subsystem xmlns="urn:jboss:domain:ejb3:6.0">
             <session-bean>
                 <stateless>
                     <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
@@ -234,23 +243,22 @@
             </timer-service>
             <remote connector-ref="http-remoting-connector" thread-pool-name="default">
                 <channel-creation-options>
-                    <option name="READ_TIMEOUT" value="${prop.remoting-connector.read.timeout:20}" type="xnio"/>
                     <option name="MAX_OUTBOUND_MESSAGES" value="1234" type="remoting"/>
                 </channel-creation-options>
             </remote>
             <thread-pools>
                 <thread-pool name="default">
                     <max-threads count="10"/>
-                    <keepalive-time time="100" unit="milliseconds"/>
+                    <keepalive-time time="60" unit="seconds"/>
                 </thread-pool>
             </thread-pools>
             <iiop enable-by-default="false" use-qualified-name="false"/>
             <default-security-domain value="other"/>
             <default-missing-method-permissions-deny-access value="true"/>
-            <statistics enabled="true"/>
+            <statistics enabled="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
             <log-system-exceptions value="true"/>
         </subsystem>
-        <subsystem xmlns="urn:wildfly:elytron:4.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+        <subsystem xmlns="urn:wildfly:elytron:8.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
             <providers>
                 <aggregate-providers name="combined-providers">
                     <providers name="elytron"/>
@@ -355,17 +363,22 @@
             <initializers security="identity" transactions="spec"/>
             <security server-requires-ssl="false" client-requires-ssl="false"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:infinispan:7.0">
-            <cache-container name="server" default-cache="default" module="org.wildfly.clustering.server">
-                <local-cache name="default">
-                    <transaction mode="BATCH"/>
-                </local-cache>
-            </cache-container>
+        <subsystem xmlns="urn:jboss:domain:infinispan:9.0">
             <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
                 <local-cache name="passivation">
                     <locking isolation="REPEATABLE_READ"/>
                     <transaction mode="BATCH"/>
                     <file-store passivation="true" purge="false"/>
+                </local-cache>
+                <local-cache name="sso">
+                    <locking isolation="REPEATABLE_READ"/>
+                    <transaction mode="BATCH"/>
+                </local-cache>
+                <local-cache name="routing"/>
+            </cache-container>
+            <cache-container name="server" default-cache="default" module="org.wildfly.clustering.server">
+                <local-cache name="default">
+                    <transaction mode="BATCH"/>
                 </local-cache>
             </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="passivation" module="org.wildfly.clustering.ejb.infinispan">
@@ -377,7 +390,6 @@
             </cache-container>
             <cache-container name="hibernate" module="org.infinispan.hibernate-cache">
                 <local-cache name="entity">
-                    <transaction mode="NON_XA"/>
                     <object-memory size="10000"/>
                     <expiration max-idle="100000"/>
                 </local-cache>
@@ -428,9 +440,9 @@
                 <smtp-server outbound-socket-binding-ref="mail-smtp"/>
             </mail-session>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:messaging-activemq:4.0">
+        <subsystem xmlns="urn:jboss:domain:messaging-activemq:8.0">
             <server name="default">
-                <journal pool-files="10"/>
+                <statistics enabled="${wildfly.messaging-activemq.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
                 <security-setting name="#">
                     <role name="guest" send="true" consume="true" create-non-durable-queue="true" delete-non-durable-queue="true"/>
                 </security-setting>
@@ -451,43 +463,15 @@
                     <param name="buffer-pooling" value="false"/>
                 </in-vm-acceptor>
                 <jms-queue name="ExpiryQueue" entries="java:/jms/queue/ExpiryQueue"/>
-                <jms-queue name="targetQueue" entries="java:/jms/queue/targetQueue"/>
-                <jms-queue name="sourceQueue" entries="java:/jms/queue/sourceQueue java:jboss/exported/jms/queue/sourceQueue"/>
                 <jms-queue name="DLQ" entries="java:/jms/queue/DLQ"/>
                 <connection-factory name="InVmConnectionFactory" entries="java:/ConnectionFactory" connectors="in-vm"/>
-                <connection-factory name="BridgeConnectionFactory" entries="java:/BridgeConnectionFactory" connectors="in-vm" factory-type="XA_QUEUE"/>
                 <connection-factory name="RemoteConnectionFactory" entries="java:jboss/exported/jms/RemoteConnectionFactory" connectors="http-connector"/>
                 <pooled-connection-factory name="activemq-ra" entries="java:/JmsXA java:jboss/DefaultJMSConnectionFactory" connectors="in-vm" transaction="xa"/>
             </server>
-            <jms-bridge name="pullBridge" module="org.jboss.genericjms.provider" quality-of-service="ONCE_AND_ONLY_ONCE" failure-retry-interval="60000" max-retries="15" max-batch-size="1" max-batch-time="100">
-                <source connection-factory="jms/cf/XAQueueConnectionFactory" destination="jms/queue/sourceQueue" user="${tibco.user}" password="${tibco.password}">
-                    <source-context>
-                        <property name="java.naming.factory.initial" value="com.tibco.tibjms.naming.TibjmsInitialContextFactory"/>
-                        <property name="java.naming.factory.url.pkgs" value="com.tibco.tibjms.naming"/>
-                        <property name="java.naming.provider.url" value="tcp://${tibco.host}:${tibco.port}"/>
-                        <property name="java.naming.security.principal" value="${tibco.user}"/>
-                        <property name="java.naming.security.credentials" value="${tibco.password}"/>
-                        <property name="org.jboss.as.naming.lookup.by.string" value="true"/>
-                    </source-context>
-                </source>
-                <target connection-factory="java:/BridgeConnectionFactory" destination="java:/jms/queue/targetQueue"/>
-            </jms-bridge>
-            <jms-bridge name="pushBridge" module="org.jboss.genericjms.provider" quality-of-service="ONCE_AND_ONLY_ONCE" failure-retry-interval="60000" max-retries="-1" max-batch-size="1" max-batch-time="100">
-                <source connection-factory="java:/BridgeConnectionFactory" destination="java:/jms/queue/sourceQueue"/>
-                <target connection-factory="jms/cf/XAQueueConnectionFactory" destination="jms/queue/targetQueue" user="${tibco.user}" password="${tibco.password}">
-                    <target-context>
-                        <property name="java.naming.factory.initial" value="com.tibco.tibjms.naming.TibjmsInitialContextFactory"/>
-                        <property name="java.naming.factory.url.pkgs" value="com.tibco.tibjms.naming"/>
-                        <property name="java.naming.provider.url" value="tcp://${tibco.host}:${tibco.port}"/>
-                        <property name="java.naming.security.principal" value="${tibco.user}"/>
-                        <property name="java.naming.security.credentials" value="${tibco.password}"/>
-                        <property name="org.jboss.as.naming.lookup.by.string" value="true"/>
-                    </target-context>
-                </target>
-            </jms-bridge>
         </subsystem>
         <subsystem xmlns="urn:wildfly:microprofile-config-smallrye:1.0"/>
-        <subsystem xmlns="urn:wildfly:microprofile-health-smallrye:1.0" security-enabled="false"/>
+        <subsystem xmlns="urn:wildfly:microprofile-health-smallrye:2.0" security-enabled="false" empty-liveness-checks-status="${env.MP_HEALTH_EMPTY_LIVENESS_CHECKS_STATUS:UP}" empty-readiness-checks-status="${env.MP_HEALTH_EMPTY_READINESS_CHECKS_STATUS:UP}"/>
+        <subsystem xmlns="urn:wildfly:microprofile-metrics-smallrye:2.0" security-enabled="false" exposed-subsystems="*" prefix="${wildfly.metrics.prefix:jboss}"/>
         <subsystem xmlns="urn:wildfly:microprofile-opentracing-smallrye:1.0"/>
         <subsystem xmlns="urn:jboss:domain:naming:2.0">
             <bindings>
@@ -501,12 +485,13 @@
                         <property name="org.jboss.as.naming.lookup.by.string" value="true"/>
                     </environment>
                 </external-context>
-                <lookup name="java:global/jms/tibco/queue/sourceQueue" lookup="java:global/tibco/jms/queue/sourceQueue"/>
-                <lookup name="java:global/jms/tibco/queue/targetQueue" lookup="java:global/tibco/jms/queue/targetQueue"/>
-                <lookup name="java:global/jms/tibco/queue/inQueue" lookup="java:global/tibco/jms/queue/inQueue"/>
-                <lookup name="java:global/jms/tibco/queue/outQueue" lookup="java:global/tibco/jms/queue/outQueue"/>
-                <lookup name="java:global/jms/tibco/topic/inTopic" lookup="java:global/tibco/jms/topic/inTopic"/>
-                <lookup name="java:global/jms/tibco/topic/outTopic" lookup="java:global/tibco/jms/topic/outTopic"/>
+                <lookup name="java:/jms/tibco/queue/sourceQueue" lookup="java:global/tibco/jms/queue/sourceQueue"/>
+                <lookup name="java:/jms/tibco/queue/targetQueue" lookup="java:global/tibco/jms/queue/targetQueue"/>
+                <lookup name="java:/jms/tibco/queue/inQueue" lookup="java:global/tibco/jms/queue/inQueue"/>
+                <lookup name="java:/jms/tibco/queue/outQueue" lookup="java:global/tibco/jms/queue/outQueue"/>
+                <lookup name="java:/jms/tibco/topic/testTopic" lookup="java:global/tibco/jms/topic/testTopic"/>
+                <lookup name="java:/jms/tibco/topic/inTopic" lookup="java:global/tibco/jms/topic/inTopic"/>
+                <lookup name="java:/jms/tibco/topic/outTopic" lookup="java:global/tibco/jms/topic/outTopic"/>
             </bindings>
             <remote-naming/>
         </subsystem>
@@ -517,26 +502,17 @@
         <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
         <subsystem xmlns="urn:jboss:domain:resource-adapters:5.0">
             <resource-adapters>
-                <resource-adapter id="genericjms-xa">
+                <resource-adapter id="genericjms-xa" statistics-enabled="true">
                     <module slot="main" id="org.jboss.genericjms"/>
                     <transaction-support>XATransaction</transaction-support>
                     <connection-definitions>
-                        <connection-definition class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory" jndi-name="java:/tibco/jms/cf/XATopicConnectionFactory" pool-name="XATCF">
-                            <config-property name="ConnectionFactory">
-                                jms/cf/XATopicConnectionFactory
-                            </config-property>
-                            <config-property name="UserName">
-                                ${tibco.user}
-                            </config-property>
-                            <config-property name="SessionDefaultType">
-                                javax.jms.Topic
-                            </config-property>
-                            <config-property name="Password">
-                                ${tibco.password}
-                            </config-property>
-                            <config-property name="JndiParameters">
-                                java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://${tibco.host}:${tibco.port}
-                            </config-property>
+                        <connection-definition class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory" jndi-name="java:/jms/tibco/cf/XATopicConnectionFactory" pool-name="XATCF">
+                            <config-property name="JMS20">false</config-property>
+                            <config-property name="ConnectionFactory">jms/cf/XATopicConnectionFactory</config-property>
+                            <config-property name="UserName">${tibco.user}</config-property>
+                            <config-property name="SessionDefaultType">javax.jms.Topic</config-property>
+                            <config-property name="Password">${tibco.password}</config-property>
+                            <config-property name="JndiParameters">java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://${tibco.host}:${tibco.port}</config-property>
                             <xa-pool>
                                 <min-pool-size>5</min-pool-size>
                                 <max-pool-size>15</max-pool-size>
@@ -548,22 +524,30 @@
                                 </recover-credential>
                             </recovery>
                         </connection-definition>
-                        <connection-definition class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory" jndi-name="java:/tibco/jms/cf/XAQueueConnectionFactory" pool-name="XAQCF">
-                            <config-property name="ConnectionFactory">
-                                jms/cf/XAQueueConnectionFactory
-                            </config-property>
-                            <config-property name="UserName">
-                                ${tibco.user}
-                            </config-property>
-                            <config-property name="SessionDefaultType">
-                                javax.jms.Queue
-                            </config-property>
-                            <config-property name="Password">
-                                ${tibco.password}
-                            </config-property>
-                            <config-property name="JndiParameters">
-                                java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://${tibco.host}:${tibco.port}
-                            </config-property>
+                        <connection-definition class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory" jndi-name="java:/jms/tibco/cf/XAJMSContextConnectionFactory" pool-name="XACCF">
+                            <config-property name="ConnectionFactory">jms/cf/XAQueueConnectionFactory</config-property>
+                            <config-property name="UserName">${tibco.user}</config-property>
+                            <config-property name="SessionDefaultType">javax.jms.JMSContext</config-property>
+                            <config-property name="Password">${tibco.password}</config-property>
+                            <config-property name="JndiParameters">java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://${tibco.host}:${tibco.port}</config-property>
+                            <xa-pool>
+                                <min-pool-size>5</min-pool-size>
+                                <max-pool-size>15</max-pool-size>
+                            </xa-pool>
+                            <recovery no-recovery="false">
+                                <recover-credential>
+                                    <user-name>${tibco.user}</user-name>
+                                    <password>${tibco.password}</password>
+                                </recover-credential>
+                            </recovery>
+                        </connection-definition>
+                        <connection-definition class-name="org.jboss.resource.adapter.jms.JmsManagedConnectionFactory" jndi-name="java:/jms/tibco/cf/XAQueueConnectionFactory" pool-name="XAQCF">
+                            <config-property name="JMS20">false</config-property>
+                            <config-property name="ConnectionFactory">jms/cf/XAQueueConnectionFactory</config-property>
+                            <config-property name="UserName">${tibco.user}</config-property>
+                            <config-property name="SessionDefaultType">javax.jms.Queue</config-property>
+                            <config-property name="Password">${tibco.password}</config-property>
+                            <config-property name="JndiParameters">java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://${tibco.host}:${tibco.port}</config-property>
                             <xa-pool>
                                 <min-pool-size>5</min-pool-size>
                                 <max-pool-size>15</max-pool-size>
@@ -631,7 +615,7 @@
             </deployment-permissions>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:transactions:5.0">
-            <core-environment node-identifier="${tx.node.id}">
+            <core-environment node-identifier="${jboss.tx.node.id:1}">
                 <process-id>
                     <uuid/>
                 </process-id>
@@ -640,7 +624,7 @@
             <coordinator-environment statistics-enabled="true"/>
             <object-store path="tx-object-store" relative-to="jboss.server.data.dir"/>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:undertow:7.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default" default-security-domain="other">
+        <subsystem xmlns="urn:jboss:domain:undertow:10.0" default-server="default-server" default-virtual-host="default-host" default-servlet-container="default" default-security-domain="other" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
             <buffer-cache name="default"/>
             <server name="default-server">
                 <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
@@ -658,7 +642,7 @@
                 <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
             </handlers>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:webservices:2.0">
+        <subsystem xmlns="urn:jboss:domain:webservices:2.0" statistics-enabled="${wildfly.webservices.statistics-enabled:${wildfly.statistics-enabled:false}}">
             <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>
             <endpoint-config name="Standard-Endpoint-Config"/>
             <endpoint-config name="Recording-Endpoint-Config">
@@ -682,22 +666,22 @@
         </interface>
     </interfaces>
     <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
-        <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
-        <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
         <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
         <socket-binding name="http" port="${jboss.http.port:8080}"/>
         <socket-binding name="https" port="${jboss.https.port:8443}"/>
-        <socket-binding name="txn-recovery-environment" port="4712"/>
-        <socket-binding name="txn-status-manager" port="4713"/>
         <socket-binding name="iiop" interface="unsecure" port="3528"/>
         <socket-binding name="iiop-ssl" interface="unsecure" port="3529"/>
+        <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
+        <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
+        <socket-binding name="txn-recovery-environment" port="4712"/>
+        <socket-binding name="txn-status-manager" port="4713"/>
         <outbound-socket-binding name="mail-smtp">
             <remote-destination host="localhost" port="25"/>
         </outbound-socket-binding>
     </socket-binding-group>
     <deployments>
         <deployment name="jboss-generic-jmsra-ear-1.0.ear" runtime-name="jboss-generic-jmsra-ear-1.0.ear">
-            <content sha1="22336e2d4c11911e585d375b2f3b98fc6e76a669"/>
+            <content sha1="48fcfbb591b7c6d6764a156ae983bdddc01129a3"/>
         </deployment>
     </deployments>
 </server>

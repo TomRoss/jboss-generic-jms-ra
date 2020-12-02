@@ -29,13 +29,6 @@
             <artifactId>jboss-generic-jms-ra-mdb</artifactId>
             <type>ejb</type>
         </dependency>
-
-        <dependency>
-            <groupId>org.acme.generic.jms.ra.web</groupId>
-            <artifactId>jboss-generic-jms-ra-web</artifactId>
-            <type>war</type>
-        </dependency>
-
     </dependencies>
 
     <build>

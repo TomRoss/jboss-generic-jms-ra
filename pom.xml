@@ -14,7 +14,6 @@
   <modules>
       <module>ear</module>
       <module>mdb</module>
-      <module>web</module>
   </modules>
 
   <properties>
@@ -76,13 +75,6 @@
             <artifactId>jboss-generic-jms-ra-mdb</artifactId>
             <version>1.0</version>
             <type>ejb</type>
-        </dependency>
-
-        <dependency>
-            <groupId>org.acme.generic.jms.ra.web</groupId>
-            <artifactId>jboss-generic-jms-ra-web</artifactId>
-            <version>1.0</version>
-            <type>war</type>
         </dependency>
 
        <dependency>

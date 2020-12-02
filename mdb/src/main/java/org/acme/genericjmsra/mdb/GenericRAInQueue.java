@@ -31,10 +31,6 @@ import javax.jms.TextMessage;
 import javax.naming.Context;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.acme.genericjmsra.util.MessageRecord;
-import org.acme.genericjmsra.ejb.DBManager;
-import org.acme.genericjmsra.ejb.DBManagerImpl;
-
 /**
  * Created by tomr on 27/07/15.
  */
@@ -42,7 +38,7 @@ import org.acme.genericjmsra.ejb.DBManagerImpl;
 
 @MessageDriven(name = "GenericRAInQueueMDB", activationConfig = {
         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-        @ActivationConfigProperty(propertyName = "destination", propertyValue = "jms/queue/inQueue"),
+        @ActivationConfigProperty(propertyName = "destination", propertyValue = "${tibco.in.queue}"),
         @ActivationConfigProperty(propertyName = "jndiParameters", propertyValue = "java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://aza:7222"),
         @ActivationConfigProperty(propertyName = "connectionFactory", propertyValue = "${tibco.qcf}"),
         @ActivationConfigProperty(propertyName = "user", propertyValue = "${tibco.user}"),
@@ -73,13 +69,9 @@ public class GenericRAInQueue implements MessageListener {
     private QueueSession queueSession = null;
     private TextMessage textMessage = null;
 
-    @EJB(beanName = "DBManager")
-    private DBManager ejb;
-
     private int mdbID = 0;
     private int msgCnt = 0;
 
-    private MessageRecord msgRecord = null;
     private String messageUUID = null;
 
     public GenericRAInQueue() {
@@ -98,8 +90,8 @@ public class GenericRAInQueue implements MessageListener {
         try {
             if (message instanceof TextMessage) {
 
-                if (LOG.isTraceEnabled()) {
-                    LOG.tracef("MDB[%d] Got message - '%s'.", mdbID, message);
+                if (LOG.isInfoEnabled()) {
+                    LOG.infof("MDB[%d] Got message - '%s'.", mdbID, message);
                 }
 
                 textMessage = (TextMessage) message;
@@ -160,11 +152,6 @@ public class GenericRAInQueue implements MessageListener {
                     LOG.debugf("MDB[%d] Message '%s% sent to queue '%s'.",mdbID,message.toString(),outQueue.getQueueName());
                 }
 
-                msgRecord = new MessageRecord(message.getJMSMessageID(),"InQueueMDB" + mdbID, textMessage.getText());
-
-                ejb.insertRecord(msgRecord);
-
-                msgRecord = null;
 
                 msgCnt++;
             }
@@ -237,6 +224,7 @@ public class GenericRAInQueue implements MessageListener {
 
         LOG.infof("MDB[%d] Shutting down.Processed %d messages.",mdbID,msgCnt);
 
+        mdbCnt.decrementAndGet();
 
     }
 
