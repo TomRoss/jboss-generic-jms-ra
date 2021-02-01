@@ -41,9 +41,9 @@ import java.util.concurrent.atomic.AtomicInteger;
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "jms/queue/outQueue"),
         @ActivationConfigProperty(propertyName = "jndiParameters", propertyValue = "java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://aza:7222"),
         @ActivationConfigProperty(propertyName = "connectionFactory", propertyValue = "${tibco.qcf}"),
-        @ActivationConfigProperty(propertyName = "user", propertyValue = "${tibco.user}"),
-        @ActivationConfigProperty(propertyName = "password", propertyValue = "${tibco.password}"),
-        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "${in.mdb.maxsession}"),
+        @ActivationConfigProperty(propertyName = "user", propertyValue = "${mdb.user}"),
+        @ActivationConfigProperty(propertyName = "password", propertyValue = "${mdb.password}"),
+        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "${in.mdb.max.session}"),
         @ActivationConfigProperty(propertyName = "reconnectAttempts", propertyValue = "${in.mdb.reconnect.attempts}")
 
 })

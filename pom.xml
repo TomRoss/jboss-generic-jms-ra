@@ -21,7 +21,7 @@
 
      <!-- packages -->
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-     <java.ee.spec.version>1.0.4.Final-redhat-00001</java.ee.spec.version>
+     <jakartaee8.version>7.3.5.GA</jakartaee8.version>
      <ejb3.ext.api.version>2.3.0.Final-redhat-00001</ejb3.ext.api.version>
      <ejb3.api.version>3.2</ejb3.api.version>
      <jboss.logging.version>3.3.0.Final</jboss.logging.version>
@@ -31,11 +31,11 @@
 
      <!-- plugings -->
      <compiler.pluging.version>3.8.1</compiler.pluging.version>
-     <ear.plugin.version>2.10.1</ear.plugin.version>
-     <ejb.plugin.version>2.3</ejb.plugin.version>
-     <jar.plugin.version>3.1.2</jar.plugin.version>
+     <ear.plugin.version>3.0.2</ear.plugin.version>
+     <ejb.plugin.version>3.0.1</ejb.plugin.version>
+     <jar.plugin.version>3.2.0</jar.plugin.version>
      <war.plugin.version>3.2.3</war.plugin.version>
-     <wildfly.plugin.version>2.0.1.Final</wildfly.plugin.version>
+     <wildfly.plugin.version>2.0.2.Final</wildfly.plugin.version>
 
   </properties>
 
@@ -44,9 +44,9 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.jboss.spec</groupId>
-            <artifactId>jboss-javaee-8.0</artifactId>
-            <version>${java.ee.spec.version}</version>
+            <groupId>org.jboss.bom</groupId>
+            <artifactId>jboss-eap-jakartaee8</artifactId>
+            <version>${jakartaee8.version}</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -156,11 +156,40 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
         </configuration>
       </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>${jar.plugin.version}</version>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-ejb-plugin</artifactId>
+            <version>${ejb.plugin.version}</version>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>${war.plugin.version}</version>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-ear-plugin</artifactId>
+            <version>${ear.plugin.version}</version>
+        </plugin>
+        <plugin>
+            <groupId>org.wildfly.plugins</groupId>
+            <artifactId>wildfly-maven-plugin</artifactId>
+            <version>${wildfly.plugin.version}</version>
+            <configuration>
+                <skip>true</skip>
+            </configuration>
+        </plugin>
     </plugins>
 
   </build>

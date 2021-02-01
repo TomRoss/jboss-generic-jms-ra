@@ -36,8 +36,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         @ActivationConfigProperty(propertyName = "destination", propertyValue = "jms/topic/inTopic"),
         @ActivationConfigProperty(propertyName = "jndiParameters", propertyValue = "java.naming.security.principal=${tibco.user};java.naming.security.credentials=${tibco.password};java.naming.factory.initial=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url=tcp://aza:7222"),
         @ActivationConfigProperty(propertyName = "connectionFactory", propertyValue = "${tibco.tcf}"),
-        @ActivationConfigProperty(propertyName = "user", propertyValue = "${tibco.user}"),
-        @ActivationConfigProperty(propertyName = "password", propertyValue = "${tibco.password}")
+        @ActivationConfigProperty(propertyName = "user", propertyValue = "${mdb.user}"),
+        @ActivationConfigProperty(propertyName = "password", propertyValue = "${mdb.password}")
 
 })
 @DeliveryActive(true)
