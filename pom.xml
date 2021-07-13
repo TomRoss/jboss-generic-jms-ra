@@ -14,14 +14,14 @@
   <modules>
       <module>ear</module>
       <module>mdb</module>
-      <module>web</module>
+      <!-- <module>web</module> -->
   </modules>
 
   <properties>
 
      <!-- packages -->
      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-     <jakartaee8.version>7.3.5.GA</jakartaee8.version>
+     <jakartaee8.version>7.3.7.GA</jakartaee8.version>
      <ejb3.ext.api.version>2.3.0.Final-redhat-00001</ejb3.ext.api.version>
      <ejb3.api.version>3.2</ejb3.api.version>
      <jboss.logging.version>3.3.0.Final</jboss.logging.version>
@@ -78,19 +78,13 @@
             <type>ejb</type>
         </dependency>
 
-        <dependency>
+        <!-- <dependency>
             <groupId>org.acme.generic.jms.ra.web</groupId>
             <artifactId>jboss-generic-jms-ra-web</artifactId>
             <version>1.0</version>
             <type>war</type>
-        </dependency>
+        </dependency> -->
 
-       <dependency>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j</artifactId>
-          <version>2.6.2</version>
-          <scope>provided</scope>
-       </dependency>
     </dependencies>
 
   </dependencyManagement>
@@ -156,10 +150,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.1</version>
+          <version>${compiler.pluging.version}</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>${java.compiler.source}</source>
+          <target>${java.compiler.target}</target>
         </configuration>
       </plugin>
         <plugin>
