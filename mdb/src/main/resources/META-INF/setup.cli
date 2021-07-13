@@ -2,7 +2,7 @@
 
 /system-property=pg-xa.host:add(value=${psql.host:localhost})
 /system-property=pg-xa.port:add(value=${psql.port:5432})
-/system-property=pg-xa.db:add(value="${psql.db:jbossdb}")>
+/system-property=pg-xa.db:add(value=${psql.db:jbossdb})
 /system-property=pg-xa.user:add(value=${psql.user:jboss})
 /system-property=pg-xa.password:add(value=${psql.:jboss})
 /system-property=pg.url:add(value=${psql.url})
@@ -38,7 +38,7 @@ batch
 /subsystem=ee:write-attribute(name=annotation-property-replacement,value=true)
 /subsystem=ee:write-attribute(name=spec-descriptor-property-replacement,value=true)
 /subsystem=ee:write-attribute(name=jboss-descriptor-property-replacement,value=true)
-/subsystem=ee:write-attribute(name=global-modules,value=[{name="org.jboss.common-corex",slot="main"},{name="org.jboss.genericjms.providerx",slot="main"}])
+/subsystem=ee:write-attribute(name=global-modules,value=[{name="org.jboss.genericjms.provider",slot="main"}])
 run-batch
 
 
