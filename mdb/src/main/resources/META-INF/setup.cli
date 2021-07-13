@@ -1,38 +1,16 @@
 
-
-/system-property=pg-xa.host:add(value=${psql.host:localhost})
-/system-property=pg-xa.port:add(value=${psql.port:5432})
-/system-property=pg-xa.db:add(value=${psql.db:jbossdb})
-/system-property=pg-xa.user:add(value=${psql.user:jboss})
-/system-property=pg-xa.password:add(value=${psql.:jboss})
-/system-property=pg.url:add(value=${psql.url})
-/system-property=pg.user:add(value=${psql.user})
-/system-property=pg.password:add(value=${psql.password})
-
-/system-property=pg-xa.log.level:add(value=${psql.log.level})
-/system-property=tibco.host:add(value=${external.jms.host})
-/system-property=tibco.port:add(value=${external.jms.port})
-/system-property=tibco.user:add(value=${external.jms.username})
-/system-property=tibco.password:add(value=${external.jms.password})
-/system-property=tx.node.id:add(value=${arjuna.node.id})
+batch
+/system-property=tibco.host:add(value=${external.jms.host:localhost})
+/system-property=tibco.port:add(value=${external.jms.port:7222})
+/system-property=tibco.user:add(value=${external.jms.username:admin})
+/system-property=tibco.password:add(value=${external.jms.password:admin})
+/system-property=tx.node.id:add(value=${arjuna.node.id:localhost-111})
+run-batch
 
 reload
 
-echo "properties created"
+echo "Properties created"
 
-batch
-
-/subsystem="datasources"/data-source="PostgresDS":add(background-validation="false",connection-url="jdbc:postgresql://${pg.url}",driver-name="postgresql",exception-sorter-class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter",jndi-name="java:jboss/PostgresDS",password="${pg.password}",user-name="${pg.user}",valid-connection-checker-class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker",validate-on-match="true")
-/subsystem="datasources"/jdbc-driver="postgresql":add(driver-module-name="org.postgresql.jdbc",driver-name="postgresql",driver-xa-datasource-class-name="org.postgresql.xa.PGXADataSource")
-/subsystem="datasources"/xa-data-source="PostgresXADS":add(background-validation="false",driver-name="postgresql",enabled="true",exception-sorter-class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter",jndi-name="java:jboss/datasources/xa/PostgresXADS",no-recovery="false",password="${pg-xa.password}",recovery-password="${pg-xa.password}",recovery-username="${pg-xa.user}",user-name="${pg-xa.user}",valid-connection-checker-class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker",validate-on-match="true")
-/subsystem="datasources"/xa-data-source="PostgresXADS"/xa-datasource-properties="ServerName":add(value="${pg-xa.host}")
-/subsystem="datasources"/xa-data-source="PostgresXADS"/xa-datasource-properties="PortNumber":add(value="${pg-xa.port}")
-/subsystem="datasources"/xa-data-source="PostgresXADS"/xa-datasource-properties="DatabaseName":add(value="${pg-xa.db}")
-/subsystem="datasources"/xa-data-source="PostgresXADS"/xa-datasource-properties="loggerLevel":add(value="${pg-xa.log.level}")
-/subsystem="datasources"/xa-data-source="PostgresXADS"/xa-datasource-properties="loggerFile":add(value="${jboss.server.log.dir}/pgjdbc.log")
-run-batch
-
-echo "Data sources created"
 
 batch
 /subsystem=ee:write-attribute(name=annotation-property-replacement,value=true)
@@ -92,3 +70,5 @@ batch
 /subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="CCF"/config-properties="Password":add(value="${tibco.password}")
 /subsystem="resource-adapters"/resource-adapter="genericjms"/connection-definitions="CCF"/config-properties="JndiParameters":add(value="java.naming.security.principal\=${tibco.user};java.naming.security.credentials\=${tibco.password};java.naming.factory.initial\=com.tibco.tibjms.naming.TibjmsInitialContextFactory;java.naming.provider.url\=tcp://${tibco.host}:${tibco.port}")
 run-batch
+
+reload

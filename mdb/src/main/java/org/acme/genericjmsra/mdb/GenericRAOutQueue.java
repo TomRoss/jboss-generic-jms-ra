@@ -1,8 +1,6 @@
 package org.acme.genericjmsra.mdb;
 
-import org.acme.genericjmsra.ejb.DBManager;
-import org.acme.genericjmsra.ejb.DBManagerImpl;
-import org.acme.genericjmsra.util.MessageRecord;
+
 
 import org.jboss.ejb3.annotation.ResourceAdapter;
 import org.jboss.logging.Logger;
@@ -62,10 +60,8 @@ public class GenericRAOutQueue implements MessageListener {
     private int msgCnt = 0;
     private long startOnMessage = 0;
     private long finisOnMessage = 0;
-    @EJB(name = "DBManager")
-    private DBManager ejb;
 
-    private MessageRecord msgRecord = null;
+
     @Override
     public void onMessage(Message message) {
         startOnMessage = System.currentTimeMillis();
@@ -79,9 +75,6 @@ public class GenericRAOutQueue implements MessageListener {
 
             textMessage = (TextMessage) message;
 
-            msgRecord = new MessageRecord(message.getJMSMessageID(),"OutQueueMDB" + mdbID, textMessage.getText());
-
-            ejb.updateRecord(msgRecord);
 
             if (message instanceof TextMessage) {
 
@@ -89,7 +82,7 @@ public class GenericRAOutQueue implements MessageListener {
 
             }
 
-        } catch (JMSException jmsException) {
+        //} catch (JMSException jmsException) {
 
         } finally {
             finisOnMessage = System.currentTimeMillis();

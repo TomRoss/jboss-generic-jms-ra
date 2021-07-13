@@ -31,10 +31,6 @@ import javax.jms.TextMessage;
 import javax.naming.Context;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.acme.genericjmsra.util.MessageRecord;
-import org.acme.genericjmsra.ejb.DBManager;
-import org.acme.genericjmsra.ejb.DBManagerImpl;
-
 /**
  * Created by tomr on 27/07/15.
  */
@@ -73,13 +69,11 @@ public class GenericRAInQueue implements MessageListener {
     private QueueSession queueSession = null;
     private TextMessage textMessage = null;
 
-    @EJB(beanName = "DBManager")
-    private DBManager ejb;
+
 
     private int mdbID = 0;
     private int msgCnt = 0;
 
-    private MessageRecord msgRecord = null;
     private String messageUUID = null;
 
     public GenericRAInQueue() {
@@ -159,12 +153,6 @@ public class GenericRAInQueue implements MessageListener {
                 if (LOG.isDebugEnabled()){
                     LOG.debugf("MDB[%d] Message '%s% sent to queue '%s'.",mdbID,message.toString(),outQueue.getQueueName());
                 }
-
-                msgRecord = new MessageRecord(message.getJMSMessageID(),"InQueueMDB" + mdbID, textMessage.getText());
-
-                ejb.insertRecord(msgRecord);
-
-                msgRecord = null;
 
                 msgCnt++;
             }
